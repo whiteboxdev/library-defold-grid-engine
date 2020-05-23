@@ -1,0 +1,10 @@
+local dge = require "dge.dge"
+
+local config = {
+	debug = true,
+	stride = 64
+}
+
+function init(self)
+	dge.init(config)
+end
