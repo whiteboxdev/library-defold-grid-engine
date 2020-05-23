@@ -1,0 +1,33 @@
+[bootstrap]
+main_collection = /example/collection.collectionc
+render = /rendercam/rendercam.renderc
+
+[script]
+shared_state = 1
+
+[display]
+width = 1280
+height = 720
+high_dpi = 1
+update_frequency = 60
+vsync = 0
+
+[android]
+input_method = HiddenInputField
+
+[project]
+title = Defold Grid Engine - Example
+dependencies = https://github.com/rgrams/rendercam/archive/master.zip
+
+[library]
+include_dirs = dge
+default_texture_min_filter = nearest
+default_texture_mag_filter = nearest
+
+[physics]
+debug = 0
+
+[graphics]
+default_texture_min_filter = nearest
+default_texture_mag_filter = nearest
+

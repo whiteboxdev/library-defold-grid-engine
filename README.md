@@ -1,2 +1,1 @@
-# defold-grid-engine
-Defold Grid Engine
+# Defold Grid Engine
