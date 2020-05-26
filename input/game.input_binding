@@ -14,3 +14,7 @@ key_trigger {
   input: KEY_D
   action: "right"
 }
+key_trigger {
+  input: KEY_R
+  action: "reach"
+}

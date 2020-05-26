@@ -14,17 +14,17 @@ instances {
     w: 1.0
   }
   scale3 {
-    x: 4.0
-    y: 4.0
-    z: 4.0
+    x: 5.0
+    y: 5.0
+    z: 1.0
   }
 }
 instances {
   id: "camera"
   prototype: "/rendercam/camera.go"
   position {
-    x: 0.0
-    y: 0.0
+    x: 120.0
+    y: 120.0
     z: 1.0
   }
   rotation {
@@ -61,8 +61,8 @@ instances {
   id: "player"
   prototype: "/example/player.go"
   position {
-    x: 0.0
-    y: 0.0
+    x: 120.0
+    y: 120.0
     z: 0.5
   }
   rotation {
@@ -72,8 +72,8 @@ instances {
     w: 1.0
   }
   scale3 {
-    x: 1.0
-    y: 1.0
+    x: 5.0
+    y: 5.0
     z: 1.0
   }
 }

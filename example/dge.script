@@ -2,7 +2,8 @@ local dge = require "dge.dge"
 
 local config = {
 	debug = true,
-	stride = 64
+	stride = 80,
+	ordinal = true
 }
 
 function init(self)
