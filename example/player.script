@@ -1,7 +1,13 @@
 local dge = require "dge.dge"
 local rendercam = require "rendercam.rendercam"
 
-local config = {
+local dge_config = {
+	debug = true,
+	stride = 80,
+	ordinal = true
+}
+
+local member_config = {
 	speed = 3
 }
 
@@ -18,8 +24,8 @@ local h_str = {
 function init(self)
 	msg.post("#", h_str.acquire_input_focus)
 	rendercam.follow("/player")
-	rendercam.follow_lerp_speed = 8
-	self.dge = dge.register(config)
+	dge.init(dge_config)
+	self.dge = dge.register(member_config)
 end
 
 function update(self, dt)
