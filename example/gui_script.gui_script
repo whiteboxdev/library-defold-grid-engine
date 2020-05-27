@@ -1,5 +1,6 @@
 local h_str = {
-	display = hash("display")
+	display = hash("display"),
+	clear = hash("clear")
 }
 
 local names = {
@@ -18,5 +19,7 @@ local names = {
 function on_message(self, message_id, message, sender)
 	if message_id == h_str.display then
 		gui.set_text(gui.get_node(h_str.display), names[message.id])
+	elseif message_id == h_str.clear then
+		gui.set_text(gui.get_node(h_str.display), "")
 	end
 end

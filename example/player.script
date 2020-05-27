@@ -20,7 +20,8 @@ local h_str = {
 	right = hash("right"),
 	reach = hash("reach"),
 	fast = hash("fast"),
-	display = hash("display")
+	display = hash("display"),
+	clear = hash("clear")
 }
 
 function init(self)
@@ -39,12 +40,16 @@ function on_input(self, action_id, action)
 	if action.pressed then
 		if action_id == h_str.up then
 			self.dge.move_up()
+			msg.post("/map#gui", h_str.clear)
 		elseif action_id == h_str.left then
 			self.dge.move_left()
+			msg.post("/map#gui", h_str.clear)
 		elseif action_id == h_str.down then
 			self.dge.move_down()
+			msg.post("/map#gui", h_str.clear)
 		elseif action_id == h_str.right then
 			self.dge.move_right()
+			msg.post("/map#gui", h_str.clear)
 		elseif action_id == h_str.reach then
 			local tile_position = self.dge.reach()
 			if tile_position then
