@@ -32,7 +32,7 @@ local dge = {}
 
 local ordinal_scaler = 1 / math.sqrt(2)
 
-local direction = {
+direction = {
 	u  = 1,
 	l  = 2,
 	d  = 4,
@@ -76,12 +76,8 @@ function dge.init(config)
 	end
 end
 
-function dge.get_debug()
-	return dge.debug
-end
-
-function dge.set_debug(debug)
-	dge.debug = debug
+function dge.toggle_debug()
+	dge.debug = not dge.debug
 end
 
 function dge.get_stride()
@@ -193,7 +189,7 @@ function dge.register(config)
 		_speed = speed
 	end
 
-	function member.get_moving()
+	function member.is_moving()
 		return _moving
 	end
 
