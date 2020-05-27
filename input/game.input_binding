@@ -18,3 +18,7 @@ key_trigger {
   input: KEY_R
   action: "reach"
 }
+key_trigger {
+  input: KEY_LSHIFT
+  action: "fast"
+}

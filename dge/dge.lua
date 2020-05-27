@@ -163,7 +163,7 @@ function dge.register(config)
 	end
 
 	local function lerp_scalar()
-		if ordinal_movement() then
+		if dge.ordinal and ordinal_movement() then
 			return ordinal_scaler
 		end
 		return 1

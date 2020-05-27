@@ -4,7 +4,7 @@ local rendercam = require "rendercam.rendercam"
 local dge_config = {
 	debug = true,
 	stride = 80,
-	ordinal = true
+	ordinal = false
 }
 
 local member_config = {
@@ -18,7 +18,9 @@ local h_str = {
 	left = hash("left"),
 	down = hash("down"),
 	right = hash("right"),
-	reach = hash("reach")
+	reach = hash("reach"),
+	fast = hash("fast"),
+	display = hash("display")
 }
 
 function init(self)
@@ -45,7 +47,17 @@ function on_input(self, action_id, action)
 			self.dge.move_right()
 		elseif action_id == h_str.reach then
 			local tile_position = self.dge.reach()
-			pprint(tile_position)
+			if tile_position then
+				local tile_id_object = tilemap.get_tile("/map#tilemap", "object", tile_position.x, tile_position.y)
+				local tile_id_terrain = tilemap.get_tile("/map#tilemap", "terrain", tile_position.x, tile_position.y)
+				if tile_id_object ~= 0 then
+					msg.post("/map#gui", h_str.display, { id = tile_id_object })
+				elseif tile_id_terrain ~= 0 then
+					msg.post("/map#gui", h_str.display, { id = tile_id_terrain })
+				end
+			end
+		elseif action_id == h_str.fast then
+			self.dge.set_speed(7)
 		end
 	elseif action.released then
 		if action_id == h_str.up then
@@ -56,6 +68,8 @@ function on_input(self, action_id, action)
 			self.dge.stop_down()
 		elseif action_id == h_str.right then
 			self.dge.stop_right()
+		elseif action_id == h_str.fast then
+			self.dge.set_speed(3)
 		end
 	end
 end

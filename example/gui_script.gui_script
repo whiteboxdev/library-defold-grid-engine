@@ -1,0 +1,22 @@
+local h_str = {
+	display = hash("display")
+}
+
+local names = {
+	[1]  = "Dark Tile",
+	[2]  = "Light Tile",
+	[3]  = "Treasure Chest",
+	[4]  = "Up-Down Red Carpet",
+	[5]  = "Up-Right Red Carpet",
+	[6]  = "Up-Left Red Carpet",
+	[7]  = "Left-Right Red Carpet",
+	[8]  = "Down-Right Red Carpet",
+	[9]  = "Down-Left Red Carpet",
+	[10] = "Down-Left-Right Red Carpet"
+}
+
+function on_message(self, message_id, message, sender)
+	if message_id == h_str.display then
+		gui.set_text(gui.get_node(h_str.display), names[message.id])
+	end
+end
