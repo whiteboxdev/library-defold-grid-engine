@@ -23,6 +23,7 @@ local h_str = {
 
 function init(self)
 	msg.post("#", h_str.acquire_input_focus)
+	rendercam.follow_lerp_speed = 8
 	rendercam.follow("/player")
 	dge.init(dge_config)
 	self.dge = dge.register(member_config)

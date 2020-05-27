@@ -32,6 +32,28 @@ local dge = {}
 
 local ordinal_scaler = 1 / math.sqrt(2)
 
+local direction = {
+	u  = 1,
+	l  = 2,
+	d  = 4,
+	r  = 8,
+	ul = 3,
+	dl = 6,
+	dr = 12,
+	ur = 9
+}
+
+local front = {
+	[1]  = vmath.vector3(0, 1, 0),
+	[2]  = vmath.vector3(-1, 0, 0),
+	[4]  = vmath.vector3(0, -1, 0),
+	[8]  = vmath.vector3(1, 0, 0),
+	[3]  = vmath.vector3(-1, 1, 0),
+	[6]  = vmath.vector3(-1, -1, 0),
+	[12] = vmath.vector3(1, -1, 0),
+	[9]  = vmath.vector3(1, 1, 0)
+}
+
 ----------------------------------------------------------------------
 -- MODULE PROPERTIES
 ----------------------------------------------------------------------
@@ -44,14 +66,6 @@ dge.ordinal = true
 ----------------------------------------------------------------------
 -- MODULE FUNCTIONS
 ----------------------------------------------------------------------
-
-local function to_pixel_coordinates(grid_coordinates)
-	return vmath.vector3(math.floor(grid_coordinates.x * dge.stride), math.floor(grid_coordinates.y * dge.stride), grid_coordinates.z)
-end
-
-local function to_grid_coordinates(pixel_coordinates)
-	return vmath.vector3(math.floor(pixel_coordinates.x / dge.stride) + 1, math.floor(pixel_coordinates.y / dge.stride) + 1, pixel_coordinates.z)
-end
 
 function dge.init(config)
 	dge.debug = config.debug
@@ -86,6 +100,14 @@ function dge.set_ordinal(ordinal)
 	dge.ordinal = ordinal
 end
 
+function dge.to_pixel_coordinates(grid_coordinates)
+	return vmath.vector3(math.floor(grid_coordinates.x * dge.stride), math.floor(grid_coordinates.y * dge.stride), grid_coordinates.z)
+end
+
+function dge.to_grid_coordinates(pixel_coordinates)
+	return vmath.vector3(math.floor(pixel_coordinates.x / dge.stride) + 1, math.floor(pixel_coordinates.y / dge.stride) + 1, pixel_coordinates.z)
+end
+
 function dge.register(config)
 	
 	dge.members[go.get_id()] = true
@@ -94,41 +116,61 @@ function dge.register(config)
 	-- INSTANCE PROPERTIES
 	----------------------------------------------------------------------
 
-	local member   = {}
-	local _speed   = config.speed
-	local _input   = { up = false, left = false, down = false, right = false }
-	local _moving  = false
-	local _elapsed = 0
-	local _start   = go.get_position()
-	local _target  = _start
-	local _front   = _start
+	local member     = {}
+	local _speed     = config.speed
+	local _input     = { up = false, left = false, down = false, right = false }
+	local _direction = direction.d
+	local _moving    = false
+	local _elapsed   = 0
+	local _start     = go.get_position()
+	local _target    = go.get_position()
 	
 	----------------------------------------------------------------------
 	-- LOCAL INSTANCE FUNCTIONS
 	----------------------------------------------------------------------
 
+	local function to_direction(input)
+		local result = 0
+		if input.up then
+			result = bit.bor(result, direction.u)
+		end
+		if input.left then
+			result = bit.bor(result, direction.l)
+		end
+		if input.down then
+			result = bit.bor(result, direction.d)
+		end
+		if input.right then
+			result = bit.bor(result, direction.r)
+		end
+		return result
+	end
+
 	local function snap_position()
-		local grid_positon = to_grid_coordinates(go.get_position())
+		local grid_position = dge.to_grid_coordinates(go.get_position())
 		local half_stride = dge.stride * 0.5
-		local snap_position = vmath.vector3(grid_positon.x * dge.stride - half_stride, grid_positon.y * dge.stride - half_stride, grid_positon.z)
+		local snap_position = vmath.vector3(grid_position.x * dge.stride - half_stride, grid_position.y * dge.stride - half_stride, grid_position.z)
 		go.set_position(snap_position)
-		_moving = false
-		_elapsed = 0
 		_start = snap_position
-		_target = _start
-		_front = _start
+		_target = snap_position
+		if dge.debug then
+			print("DGE: Snapped to position. " .. go.get_id() .. " " .. snap_position)
+		end
 	end
 
 	local function ordinal_movement()
-		return (_input.up and (_input.left or _input.right)) or (_input.down and (_input.left or _input.right))
+		return _direction == direction.ul or _direction == direction.dl or _direction == direction.dr or _direction == direction.ur
 	end
 
 	local function lerp_scalar()
+		if ordinal_movement() then
+			return ordinal_scaler
+		end
 		return 1
 	end
 
 	local function lerp(dt)
-		_elapsed = _elapsed + dt * _speed
+		_elapsed = _elapsed + dt * _speed * lerp_scalar()
 		local progress = vmath.lerp(_elapsed, _start, _target)
 		if _elapsed >= 1 then
 			_elapsed = 0
@@ -155,9 +197,13 @@ function dge.register(config)
 		return _moving
 	end
 
+	function member.get_direction()
+		return _direction
+	end
+
 	function member.reach()
 		if not _moving then
-			return to_grid_coordinates(_front)
+			return dge.to_grid_coordinates(_target + front[_direction] * dge.stride)
 		end
 	end
 
@@ -202,31 +248,28 @@ function dge.register(config)
 			if dge.ordinal or not _moving then
 				_moving = true
 				_target = _target + vmath.vector3(0, dge.stride, 0)
-				_front = _target + vmath.vector3(0, dge.stride, 0)
 			end
 		end
 		if _input.left then
 			if dge.ordinal or not _moving then
 				_moving = true
 				_target = _target + vmath.vector3(-dge.stride, 0, 0)
-				_front = _target + vmath.vector3(-dge.stride, 0, 0)
 			end
 		end
 		if _input.down then
 			if dge.ordinal or not _moving then
 				_moving = true
 				_target = _target + vmath.vector3(0, -dge.stride, 0)
-				_front = _target + vmath.vector3(0, -dge.stride, 0)
 			end
 		end
 		if _input.right then
 			if dge.ordinal or not _moving then
 				_moving = true
 				_target = _target + vmath.vector3(dge.stride, 0, 0)
-				_front = _target + vmath.vector3(dge.stride, 0, 0)
 			end
 		end
 		if _moving then
+			_direction = to_direction(_input)
 			lerp(dt)
 		end
 	end
@@ -238,7 +281,9 @@ function dge.register(config)
 		end
 	end
 
-	print("DGE: Game object registered. " .. go.get_id())
+	if dge.debug then
+		print("DGE: Game object registered. " .. go.get_id())
+	end
 
 	snap_position()
 
