@@ -64,8 +64,8 @@ You may also catch the following messages that DGE sends to your character's `on
 
 ```
 dge.msg = {
-    move_start = hash("move_start"),
-    move_end = hash("move_end")
+	move_start = hash("move_start"),
+	move_end   = hash("move_end")
 }
 ```
 
@@ -200,22 +200,22 @@ Gets the direction in which the game object is currently facing.
 
 #### Returns
 
-Returns an `integer` conforming to the following table:
+Returns a table with the following properties:
 
 ```
 dge.direction = {
-	u  = 1,
-	l  = 2,
-	d  = 4,
-	r  = 8,
-	ul = 3,
-	dl = 6,
-	dr = 12,
-	ur = 9
+	up         = { value = 1,  string = "up"         },
+	left       = { value = 2,  string = "left"       },
+	down       = { value = 4,  string = "down"       },
+	right      = { value = 8,  string = "right"      },
+	up_left    = { value = 3,  string = "up_left"    },
+	down_left  = { value = 6,  string = "down_left"  },
+	down_right = { value = 12, string = "down_right" },
+	up_right   = { value = 9   string = "up_right"   }
 }
 ```
 
-**Note**: You may reference the above table in your scripts like so: `dge.direction.DIRECTION_KEY`.
+**Note**: You may reference the above table in your scripts like so: `dge.direction.DIRECTION_KEY.value` or `dge.direction.DIRECTION_KEY.string`.
 
 ---
 

@@ -57,19 +57,19 @@ dge.stride  = 0
 dge.ordinal = true
 
 dge.direction = {
-	u  = 1,
-	l  = 2,
-	d  = 4,
-	r  = 8,
-	ul = 3,
-	dl = 6,
-	dr = 12,
-	ur = 9
+	up         = { value = 1,  string = "up"         },
+	left       = { value = 2,  string = "left"       },
+	down       = { value = 4,  string = "down"       },
+	right      = { value = 8,  string = "right"      },
+	up_left    = { value = 3,  string = "up_left"    },
+	down_left  = { value = 6,  string = "down_left"  },
+	down_right = { value = 12, string = "down_right" },
+	up_right   = { value = 9   string = "up_right"   }
 }
 
 dge.msg = {
 	move_start = hash("move_start"),
-	move_end = hash("move_end")
+	move_end   = hash("move_end")
 }
 
 ----------------------------------------------------------------------
@@ -128,7 +128,7 @@ function dge.register(config)
 	local member     = {}
 	local _speed     = config.speed
 	local _input     = { up = false, left = false, down = false, right = false }
-	local _direction = dge.direction.d
+	local _direction = dge.direction.down
 	local _moving    = false
 	local _elapsed   = 0
 	local _start     = go.get_position()
@@ -141,16 +141,16 @@ function dge.register(config)
 	local function to_direction(input)
 		local result = 0
 		if input.up then
-			result = bit.bor(result, dge.direction.u)
+			result = bit.bor(result, dge.direction.up.value)
 		end
 		if input.left then
-			result = bit.bor(result, dge.direction.l)
+			result = bit.bor(result, dge.direction.left.value)
 		end
 		if input.down then
-			result = bit.bor(result, dge.direction.d)
+			result = bit.bor(result, dge.direction.down.value)
 		end
 		if input.right then
-			result = bit.bor(result, dge.direction.r)
+			result = bit.bor(result, dge.direction.right.value)
 		end
 		return result
 	end
@@ -168,7 +168,7 @@ function dge.register(config)
 	end
 
 	local function ordinal_movement()
-		return _direction == dge.direction.ul or _direction == dge.direction.dl or _direction == dge.direction.dr or _direction == dge.direction.ur
+		return _direction == dge.direction.up_left or _direction == dge.direction.down_left or _direction == dge.direction.down_right or _direction == dge.direction.up_right
 	end
 
 	local function lerp_scalar()
@@ -213,7 +213,7 @@ function dge.register(config)
 
 	function member.reach()
 		if not _moving then
-			return dge.to_grid_coordinates(_target + front[_direction] * dge.stride)
+			return dge.to_grid_coordinates(_target + front[_direction.value] * dge.stride)
 		end
 	end
 
