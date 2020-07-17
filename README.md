@@ -211,7 +211,7 @@ dge.direction = {
 	up_left    = { value = 3,  string = "up_left"    },
 	down_left  = { value = 6,  string = "down_left"  },
 	down_right = { value = 12, string = "down_right" },
-	up_right   = { value = 9   string = "up_right"   }
+	up_right   = { value = 9,  string = "up_right"   }
 }
 ```
 
