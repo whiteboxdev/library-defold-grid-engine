@@ -152,6 +152,11 @@ function dge.register(config)
 		if input.right then
 			result = bit.bor(result, dge.direction.right.value)
 		end
+		for key, value in pairs(dge.direction) do
+			if value.value == result then
+				return value
+			end
+		end
 		return result
 	end
 
