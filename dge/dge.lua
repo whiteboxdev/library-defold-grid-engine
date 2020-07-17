@@ -36,17 +36,6 @@ local dge = {}
 
 local ordinal_scaler = 1 / math.sqrt(2)
 
-direction = {
-	u  = 1,
-	l  = 2,
-	d  = 4,
-	r  = 8,
-	ul = 3,
-	dl = 6,
-	dr = 12,
-	ur = 9
-}
-
 local front = {
 	[1]  = vmath.vector3(0, 1, 0),
 	[2]  = vmath.vector3(-1, 0, 0),
@@ -67,6 +56,22 @@ dge.debug   = false
 dge.stride  = 0
 dge.ordinal = true
 
+dge.direction = {
+	u  = 1,
+	l  = 2,
+	d  = 4,
+	r  = 8,
+	ul = 3,
+	dl = 6,
+	dr = 12,
+	ur = 9
+}
+
+dge.msg = {
+	move_start = hash("move_start"),
+	move_end = hash("move_end")
+}
+
 ----------------------------------------------------------------------
 -- MODULE FUNCTIONS
 ----------------------------------------------------------------------
@@ -78,6 +83,10 @@ function dge.init(config)
 	if config.debug then
 		print("DGE: Initialized.")
 	end
+end
+
+function dge.get_debug()
+	return dge.debug
 end
 
 function dge.toggle_debug()
@@ -119,7 +128,7 @@ function dge.register(config)
 	local member     = {}
 	local _speed     = config.speed
 	local _input     = { up = false, left = false, down = false, right = false }
-	local _direction = direction.d
+	local _direction = dge.direction.d
 	local _moving    = false
 	local _elapsed   = 0
 	local _start     = go.get_position()
@@ -132,16 +141,16 @@ function dge.register(config)
 	local function to_direction(input)
 		local result = 0
 		if input.up then
-			result = bit.bor(result, direction.u)
+			result = bit.bor(result, dge.direction.u)
 		end
 		if input.left then
-			result = bit.bor(result, direction.l)
+			result = bit.bor(result, dge.direction.l)
 		end
 		if input.down then
-			result = bit.bor(result, direction.d)
+			result = bit.bor(result, dge.direction.d)
 		end
 		if input.right then
-			result = bit.bor(result, direction.r)
+			result = bit.bor(result, dge.direction.r)
 		end
 		return result
 	end
@@ -159,7 +168,7 @@ function dge.register(config)
 	end
 
 	local function ordinal_movement()
-		return _direction == direction.ul or _direction == direction.dl or _direction == direction.dr or _direction == direction.ur
+		return _direction == dge.direction.ul or _direction == dge.direction.dl or _direction == dge.direction.dr or _direction == dge.direction.ur
 	end
 
 	local function lerp_scalar()
@@ -173,6 +182,7 @@ function dge.register(config)
 		_elapsed = _elapsed + dt * _speed * lerp_scalar()
 		local progress = vmath.lerp(_elapsed, _start, _target)
 		if _elapsed >= 1 then
+			msg.post("#", dge.msg.move_end)
 			_elapsed = 0
 			_moving = false
 			_start = _target
@@ -269,6 +279,7 @@ function dge.register(config)
 			end
 		end
 		if _moving then
+			msg.post("#", dge.msg.move_start)
 			_direction = to_direction(_input)
 			lerp(dt)
 		end

@@ -30,7 +30,7 @@ end
 2. `stride`: Size of a single grid box (if you're using a tilemap, then this is equivalent to your tile size.)
 3. `ordinal`: Allow diagonal movement.
 
-It is recommended that you initialize DGE in a script separate from your character script. This way, you do not accidentally redundantly initialize more than once. Moreover, characters will not be registered correctly if `dge.init()` is called *after* character registration.
+It is recommended that you initialize DGE in a script separate from your character script, as characters will not be registered correctly if `dge.init()` is called *after* character registration.
 
 Now that the system is initialized, register your character like so:
 
@@ -60,6 +60,15 @@ function final(self)
 end
 ```
 
+You may also catch the following messages that DGE sends to your character's `on_message` function:
+
+```
+dge.msg = {
+    move_start = hash("move_start"),
+    move_end = hash("move_end")
+}
+```
+
 You're ready to use DGE! Note that DGE only needs to be initialized once, however initalizing more than once will not cause any errors. Also note that any characters not registered in the system may be freely controlled by the programmer--DGE does not conflict with any external character logic.
 
 ## DGE API: User Functions
@@ -77,6 +86,14 @@ Registers the current game object in the grid system.
 Returns an instance of DGE. Use this to access all `self.dge.FUNCTION_NAME()` functions.
 
 ---
+
+### dge.get_debug()
+
+Checks if debug mode is enabled.
+
+#### Returns
+
+Returns a `bool`.
 
 ### dge.toggle_debug()
 
@@ -186,7 +203,7 @@ Gets the direction in which the game object is currently facing.
 Returns an `integer` conforming to the following table:
 
 ```
-direction = {
+dge.direction = {
 	u  = 1,
 	l  = 2,
 	d  = 4,
