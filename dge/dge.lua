@@ -58,7 +58,8 @@ dge.direction = {
 
 dge.msg = {
 	move_start = hash("move_start"),
-	move_end = hash("move_end")
+	move_end = hash("move_end"),
+	move_repeat = hash("move_repeat")
 }
 
 ----------------------------------------------------------------------
@@ -236,6 +237,8 @@ function dge.register(config)
 			if not complete then
 				msg.post("#", dge.msg.move_start)
 				lerp(dt)
+			else
+				msg.post("#", dge.msg.move_repeat)
 			end
 		elseif complete then
 			msg.post("#", dge.msg.move_end)

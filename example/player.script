@@ -93,5 +93,7 @@ function on_message(self, message_id, message, sender)
 		print("Caught dge.msg.move_start.")
 	elseif message_id == dge.msg.move_end and dge.get_debug() then
 		print("Caught dge.msg.move_end.")
+	elseif message_id == dge.msg.move_repeat and dge.get_debug() then
+		print("Caught dge.msg.move_repeat.")
 	end
 end
