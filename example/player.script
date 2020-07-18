@@ -1,14 +1,18 @@
 local dge = require "dge.dge"
 local rendercam = require "rendercam.rendercam"
 
+local walk_speed = 3
+local dash_speed = 6
+
 local dge_config = {
 	debug = true,
-	stride = 80,
-	ordinal = false
+	stride = 80
 }
 
 local member_config = {
-	speed = 3
+	size = vmath.vector3(80, 80, 0),
+	direction = dge.direction.down,
+	speed = walk_speed
 }
 
 local h_str = {
@@ -54,7 +58,7 @@ function on_input(self, action_id, action)
 		elseif action_id == h_str.right then
 			self.dge.move_right()
 			msg.post("/map#gui", h_str.clear)
-		elseif action_id == h_str.reach then
+		elseif action_id == h_str.reach and not self.dge.get_moving() then
 			local tile_position = self.dge.reach()
 			if tile_position then
 				local tile_id_object = tilemap.get_tile("/map#tilemap", "object", tile_position.x, tile_position.y)
@@ -66,7 +70,7 @@ function on_input(self, action_id, action)
 				end
 			end
 		elseif action_id == h_str.fast then
-			self.dge.set_speed(7)
+			self.dge.set_speed(dash_speed)
 		end
 	elseif action.released then
 		if action_id == h_str.up then
@@ -78,7 +82,7 @@ function on_input(self, action_id, action)
 		elseif action_id == h_str.right then
 			self.dge.stop_right()
 		elseif action_id == h_str.fast then
-			self.dge.set_speed(3)
+			self.dge.set_speed(walk_speed)
 		end
 	end
 end
