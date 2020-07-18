@@ -137,15 +137,17 @@ function dge.register(config)
 	end
 
 	local function lerp(dt)
+		local complete = false
 		_lerp.t = _lerp.t + dt * _speed
 		local progress = vmath.lerp(_lerp.t, _lerp.v1, _lerp.v2)
 		if _lerp.t > 1 then
-			msg.post("#", dge.msg.move_end)
 			_lerp.t = 0
 			_moving = false
 			progress = _lerp.v2
+			complete = true
 		end
 		go.set_position(progress)
+		return complete
 	end
 
 	function member.get_direction()
@@ -205,9 +207,12 @@ function dge.register(config)
 	end
 
 	function member.update(dt)
+		local complete = false
 		if _moving then
-			lerp(dt)
-			return
+			complete = lerp(dt)
+			if not complete then
+				return
+			end
 		end
 		if _input.up then
 			_moving = true
@@ -227,9 +232,13 @@ function dge.register(config)
 			_lerp.v2 = _lerp.v1 + vmath.vector3(dge.stride, 0, 0)
 		end
 		if _moving then
-			msg.post("#", dge.msg.move_start)
 			_direction = input_to_direction(_input)
-			lerp(dt)
+			if not complete then
+				msg.post("#", dge.msg.move_start)
+				lerp(dt)
+			end
+		elseif complete then
+			msg.post("#", dge.msg.move_end)
 		end
 	end
 
