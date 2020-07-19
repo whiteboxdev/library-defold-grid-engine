@@ -177,7 +177,7 @@ Gets the `dge.direction` in which this character is looking.
 
 #### Returns
 
-Returns a table. See [API: Properties](#api-properties) for details.
+Returns a table. See the [`dge.direction` table](#dgedirection) for details.
 
 ---
 
@@ -280,25 +280,25 @@ Stop moving rightward.
 
 ### self.dge.look_up()
 
-Changes this character's `dge.direction` to `dge.direction.up`. This affects the return value funtions such as `self.dge.reach()`. This is also useful for simply turning a character in some direction without actually moving.
+Changes this character's `dge.direction` to `dge.direction.up`. This affects the return value of funtions such as `self.dge.reach()`. This is also useful for simply turning a character in some direction without actually moving.
 
 ---
 
 ### self.dge.look_left()
 
-Changes this character's `dge.direction` to `dge.direction.left`. This affects the return value funtions such as `self.dge.reach()`. This is also useful for simply turning a character in some direction without actually moving.
+Changes this character's `dge.direction` to `dge.direction.left`. This affects the return value of funtions such as `self.dge.reach()`. This is also useful for simply turning a character in some direction without actually moving.
 
 ---
 
 ### self.dge.look_down()
 
-Changes this character's `dge.direction` to `dge.direction.down`. This affects the return value funtions such as `self.dge.reach()`. This is also useful for simply turning a character in some direction without actually moving.
+Changes this character's `dge.direction` to `dge.direction.down`. This affects the return value of funtions such as `self.dge.reach()`. This is also useful for simply turning a character in some direction without actually moving.
 
 ---
 
 ### self.dge.look_right()
 
-Changes this character's `dge.direction` to `dge.direction.right`. This affects the return value funtions such as `self.dge.reach()`. This is also useful for simply turning a character in some direction without actually moving.
+Changes this character's `dge.direction` to `dge.direction.right`. This affects the return value of funtions such as `self.dge.reach()`. This is also useful for simply turning a character in some direction without actually moving.
 
 ---
 
