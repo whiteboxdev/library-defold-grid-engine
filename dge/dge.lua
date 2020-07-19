@@ -42,6 +42,7 @@ local neighbor = {
 dge.member = {}
 dge.debug = false
 dge.stride = 0
+dge.collision = {}
 
 dge.direction = {
 	up = { value = 1, string = "up" },
@@ -53,7 +54,14 @@ dge.direction = {
 dge.msg = {
 	move_start = hash("move_start"),
 	move_end = hash("move_end"),
-	move_repeat = hash("move_repeat")
+	move_repeat = hash("move_repeat"),
+	collide_passable = hash("collide_passable"),
+	collide_impassable = hash("collide_impassable")
+}
+
+dge.tag = {
+	{ name = hash("passable"), passable = true },
+	{ name = hash("impassable"), passable = false }
 }
 
 ----------------------------------------------------------------------
@@ -74,6 +82,29 @@ end
 
 function dge.set_debug(debug)
 	dge.debug = flag
+end
+
+function dge.get_collision()
+	return dge.collision
+end
+
+function dge.set_collision(collision)
+	dge.collision = collision
+end
+
+function dge.get_tag(name)
+	for key, value in ipairs(dge.tag) do
+		if value.name == name then
+			return { key = key, value = value }
+		end
+	end
+end
+
+function dge.add_tag(name, passable)
+	if not dge.get_tag(name) then
+		table.insert(dge.tag, { name = name, passable = passable })
+		return #dge.tag
+	end
 end
 
 function dge.to_pixel_coordinates(grid_coordinates)
@@ -226,21 +257,53 @@ function dge.register(config)
 			end
 		end
 		if _input.up then
-			_moving = true
-			_lerp.v1 = go.get_position()
-			_lerp.v2 = _lerp.v1 + vmath.vector3(0, dge.stride, 0)
+			local position = member.get_position()
+			local tag = dge.tag[dge.collision[#dge.collision - position.y][position.x]]
+			if tag.passable then
+				msg.post("#", dge.msg.collide_passable, { name = tag.name })
+				_moving = true
+				_lerp.v1 = go.get_position()
+				_lerp.v2 = _lerp.v1 + vmath.vector3(0, dge.stride, 0)
+			else
+				msg.post("#", dge.msg.collide_impassable, { name = tag.name })
+				_direction = dge.direction.up
+			end
 		elseif _input.left then
-			_moving = true
-			_lerp.v1 = go.get_position()
-			_lerp.v2 = _lerp.v1 + vmath.vector3(-dge.stride, 0, 0)
+			local position = member.get_position()
+			local tag = dge.tag[dge.collision[#dge.collision - position.y + 1][position.x - 1]]
+			if tag.passable then
+				msg.post("#", dge.msg.collide_passable, { name = tag.name })
+				_moving = true
+				_lerp.v1 = go.get_position()
+				_lerp.v2 = _lerp.v1 + vmath.vector3(-dge.stride, 0, 0)
+			else
+				msg.post("#", dge.msg.collide_impassable, { name = tag.name })
+				_direction = dge.direction.left
+			end
 		elseif _input.down then
-			_moving = true
-			_lerp.v1 = go.get_position()
-			_lerp.v2 = _lerp.v1 + vmath.vector3(0, -dge.stride, 0)
+			local position = member.get_position()
+			local tag = dge.tag[dge.collision[#dge.collision - position.y + 2][position.x]]
+			if tag.passable then
+				msg.post("#", dge.msg.collide_passable, { name = tag.name })
+				_moving = true
+				_lerp.v1 = go.get_position()
+				_lerp.v2 = _lerp.v1 + vmath.vector3(0, -dge.stride, 0)
+			else
+				msg.post("#", dge.msg.collide_impassable, { name = tag.name })
+				_direction = dge.direction.down
+			end
 		elseif _input.right then
-			_moving = true
-			_lerp.v1 = go.get_position()
-			_lerp.v2 = _lerp.v1 + vmath.vector3(dge.stride, 0, 0)
+			local position = member.get_position()
+			local tag = dge.tag[dge.collision[#dge.collision - position.y + 1][position.x + 1]]
+			if tag.passable then
+				msg.post("#", dge.msg.collide_passable, { name = tag.name })
+				_moving = true
+				_lerp.v1 = go.get_position()
+				_lerp.v2 = _lerp.v1 + vmath.vector3(dge.stride, 0, 0)
+			else
+				msg.post("#", dge.msg.collide_impassable, { name = tag.name })
+				_direction = dge.direction.right
+			end
 		end
 		if _moving then
 			_direction = input_to_direction(_input)
