@@ -1,15 +1,16 @@
 # Defold Grid Engine
-Defold Grid Engine (DGE) provides grid-based movement, interactions, and utility features to a Defold game engine project. Two examples of video game franchises that use grid-based systems are Pokémon and Fire Emblem. If your game uses tilemaps and you're looking to benefit from all of the perks that a grid-based system ensures, then DGE is for you.
+Defold Grid Engine (DGE) provides grid-based movement, interactions, and utility features to a Defold game engine project. Two examples of video game franchises that use grid-based systems are Pokémon and Fire Emblem.
 
-Visit [my website](https://gymratgames.github.io/html/extensions.html#dge) to see an animated gif of the example project.
+Visit [my website](https://gymratgames.github.io/html/extensions.html#dge) to see an animated gif of the example project.  
+An [example project](https://github.com/gymratgames/defold-grid-engine/tree/master/example) is available if you need additional help with configuration.
 
 ## Installation
-To install DGE into your project, add one of the following to your game.project dependencies:
+To install DGE into your project, add one of the following links to your `game.project` dependencies:
   - https://github.com/gymratgames/defold-grid-engine/archive/master.zip
   - URL of a [specific release](https://github.com/gymratgames/defold-grid-engine/releases)
 
 ## Configuration
-To begin, import the DGE Lua module into your character's script like so:  
+Import the DGE Lua module into your character's script like so:  
 `local dge = require "dge.dge"`
 
 The grid system itself must be initialized before registering any characters. To initialize DGE, simply call `dge.init()` like so:
@@ -17,8 +18,7 @@ The grid system itself must be initialized before registering any characters. To
 ```
 local dge_config = {
     debug = true,
-    stride = 16,
-    ordinal = false
+    stride = 16
 }
 
 function init(self)
@@ -27,15 +27,16 @@ end
 ```
 
 1. `debug`: Allow debug information to be printed to the terminal.
-2. `stride`: Size of a single grid box (if you're using a tilemap, then this is equivalent to your tile size.)
-3. `ordinal`: Allow diagonal movement.
+2. `stride`: Size of a single grid box (if you're using a tilemap, then this is likely equivalent to your tile size.)
 
-It is recommended that you initialize DGE in a script separate from your character script, as characters will not be registered correctly if `dge.init()` is called *after* character registration.
+Make sure to call `dge.init()` before registering any characters, as characters will not be registered correctly if `dge.init()` is called after character registration.
 
-Now that the system is initialized, register your character like so:
+You may now register your characters like so:
 
 ```
 local character_config = {
+    size = vmath.vector3(16, 32, 0),
+    direction = dge.direction.down,
     speed = 3
 }
 
@@ -44,9 +45,11 @@ function init(self)
 end
 ```
 
-1. `speed`: Character movement speed in tiles per second.
+1. `size`: Size of your character in pixels.
+2. `direction`: Initial direction in which your character is looking.
+3. `speed`: Movement speed in grid boxes per second.
 
-You may now utilize all of DGE's features by referencing `self.dge.FUNCTION_NAME()`. See the [API](#dge-api-user-functions) section for more details.
+You may now utilize all of DGE's features by referencing `self.dge.FUNCTION_NAME()`.
 
 In addition to initialization and registration, you must also include updating and unregistration in your character's script:
 
@@ -60,95 +63,82 @@ function final(self)
 end
 ```
 
-You may also catch the following messages that DGE sends to your character's `on_message` function:
+## API: Properties
+
+### dge.direction
+
+Table for referencing character orientation.
 
 ```
-dge.msg = {
-	move_start = hash("move_start"),
-	move_end   = hash("move_end")
+dge.direction = {
+    up = { value = 1, string = "up" },
+    left = { value = 2, string = "left" },
+    down = { value = 4, string = "down" },
+    right = { value = 8, string = "right" }
 }
 ```
 
-You're ready to use DGE! Note that DGE only needs to be initialized once, however initalizing more than once will not cause any errors. Also note that any characters not registered in the system may be freely controlled by the programmer--DGE does not conflict with any external character logic.
+1. `value`: ID value of this direction.  
+2. `string`: String representation of this direction.
 
-## DGE API: User Functions
+### dge.msg
 
-### dge.register(config)
+Table for referencing messages posted to your character's `on_message()` function:
 
-Registers the current game object in the grid system.
+```
+dge.msg = {
+    move_start = hash("move_start"),
+    move_end = hash("move_end"),
+    move_repeat = hash("move_repeat")
+}
+```
+
+1. `move_start`: Posted when the character starts moving from rest.
+2. `move_end`: Posted when the character stops moving.
+3. `move_repeat`: Posted when the character continues moving between grid boxes without stopping.
+
+## API: Functions
+
+### dge.init(config)
+
+Initializes DGE. Must be called before registering any characters.
 
 #### Parameters
-1. `config`: Configuration table for setting up this character's properties.
-    1. `speed`: Movement speed in tiles per second.
-
-#### Returns
-
-Returns an instance of DGE. Use this to access all `self.dge.FUNCTION_NAME()` functions.
+1. `config`: Table for configuring DGE.
+    1. `debug`: `bool` indicating whether to print debug information to the terminal.
+    2. `stride`: `integer` denoting the size of a single grid box (if you're using a tilemap, then this is likely equivalent to your tile size.)
 
 ---
 
 ### dge.get_debug()
 
-Checks if debug mode is enabled.
+Checks if debug is enabled.
 
 #### Returns
 
 Returns a `bool`.
 
-### dge.toggle_debug()
-
-Toggles debug mode. False by default. System feedback will be printed to the terminal.
-
 ---
 
-### dge.get_stride()
+### dge.set_debug(debug)
 
-Gets the system's stride. Stride refers to the size of a single grid box (if you're using a tilemap, then this is equivalent to your tile size.)
-
-#### Returns
-
-Returns a number.
-
----
-
-### dge.set_stride(stride)
-
-Sets the system's stride. Stride refers to the size of a single grid box (if you're using a tilemap, then this is equivalent to your tile size.)
+Sets debug mode.
 
 #### Parameters
-1. `stride`: Number denoting the stride value.
-
----
-
-### dge.get_ordinal()
-
-Checks ordinality. If true, then game objects may move diagonally.
-
-#### Returns
-
-Returns `true` or `false`.
-
----
-
-### dge.set_ordinal(ordinal)
-
-Sets ordinality. If true, then game objects may move diagonally.
-
-#### Parameters
-1. `ordinal`: `true` or `false`.
+1. `debug`: `bool` indicating whether to print debug information to the terminal.
 
 ---
 
 ### dge.to_pixel_coordinates(grid_coordinates)
 
-Converts grid coordinates to pixel coordinates.
+Converts grid coordinates to pixel coordinates. The returned pixel coordinates point to the center of the grid box.
 
 #### Parameters
-1. `grid_coordinates`: `vector3` of numbers. The `z` component is ignored.
+1. `grid_coordinates`: `vector3` denoting the grid box to convert. The `z` component remains unchanged.
 
 #### Returns
 
-Returns a `vector3` of `integer`s. The `z` component remains unchanged.
+Returns a `vector3`.
 
 ---
 
@@ -157,17 +147,43 @@ Returns a `vector3` of `integer`s. The `z` component remains unchanged.
 Converts pixel coordinates to grid coordinates.
 
 #### Parameters
-1. `pixel_coordinates`: `vector3` of numbers. The `z` component is ignored.
+1. `pixel_coordinates`: `vector3` denoting the pixel to convert. The `z` component remains unchanged.
 
 #### Returns
 
-Returns a `vector3` of `integer`s. The `z` component remains unchanged.
+Returns a `vector3`.
+
+---
+
+### dge.register(config)
+
+Registers the current game object in the grid system.
+
+#### Parameters
+1. `config`: Table for setting up this character's properties.
+    1. `size`: `vector3` of `integer`s specifying this character's dimensions in pixels.
+    2. `direction`: Initial `dge.direction` in which your character is looking.
+    3. `speed`: Movement speed in grid boxes per second.
+
+#### Returns
+
+Returns an instance of DGE. Use this to access all `self.dge.FUNCTION_NAME()` functions.
+
+---
+
+### self.dge.get_direction()
+
+Gets the `dge.direction` in which this character is looking.
+
+#### Returns
+
+Returns a table. See [API: Properties](#api-properties) for details.
 
 ---
 
 ### self.dge.get_speed()
 
-Gets movement speed in tiles per second.
+Gets the speed of this character in grid boxes per second.
 
 #### Returns
 
@@ -177,79 +193,64 @@ Returns a number.
 
 ### self.dge.set_speed(speed)
 
-Sets movement speed in tiles per second.
+Sets the speed of this character in grid boxes per second.
 
 #### Parameters
-1. `speed`: Number denoting movement speed in tiles per second.
+1. `speed`: Speed of this character in grid boxes per second.
 
 ---
 
-### self.dge.is_moving()
+### self.dge.get_moving()
 
-Checks if the game object is currently moving.
+Checks if this character is moving.
 
 #### Returns
 
-Returns `true` or `false`.
+Returns a `bool`.
 
 ---
 
-### self.dge.get_direction()
+### self.dge.get_position()
 
-Gets the direction in which the game object is currently facing.
+Gets the position of this character in grid coordinates.
 
 #### Returns
 
-Returns a table with the following properties:
-
-```
-dge.direction = {
-	up         = { value = 1,  string = "up"         },
-	left       = { value = 2,  string = "left"       },
-	down       = { value = 4,  string = "down"       },
-	right      = { value = 8,  string = "right"      },
-	up_left    = { value = 3,  string = "up_left"    },
-	down_left  = { value = 6,  string = "down_left"  },
-	down_right = { value = 12, string = "down_right" },
-	up_right   = { value = 9,  string = "up_right"   }
-}
-```
-
-**Note**: You may reference the above table in your scripts like so: `dge.direction.DIRECTION_KEY.value` or `dge.direction.DIRECTION_KEY.string`.
+Returns a `vector3`.
 
 ---
 
 ### self.dge.reach()
 
-Allows for interaction with the tile directly in front of the game object.
+Gets the position of the grid box directly in front of this character in grid coordinates.
 
 #### Returns
 
-Returns a `vector3` of `integer`s where `x` and `y` are grid coordinates of the tile directly in front of the game object. The `z` component is equal to the game object's `go.get_position().z` value. **Note**: Returns `nil` if the game object is currently moving.
+Returns a `vector3`.
 
 ---
 
 ### self.dge.move_up()
 
-Move upward. This command will continue until `self.dge.stop_up()` is called.
+Begin moving upward. Movement will continue until `self.dge.stop_up()` is called.
 
 ---
 
 ### self.dge.move_left()
 
-Move leftward. This command will continue until `self.dge.stop_left()` is called.
+Begin moving leftward. Movement will continue until `self.dge.stop_left()` is called.
 
 ---
 
 ### self.dge.move_down()
 
-Move downward. This command will continue until `self.dge.stop_down()` is called.
+Begin moving downward. Movement will continue until `self.dge.stop_down()` is called.
 
 ---
 
 ### self.dge.move_right()
 
-Move rightward. This command will continue until `self.stop_right()` is called.
+Begin moving rightward. Movement will continue until `self.dge.stop_right()` is called.
 
 ---
 
@@ -273,25 +274,43 @@ Stop moving downward.
 
 ### self.dge.stop_right()
 
-Stop moving righward.
+Stop moving rightward.
+
+---
+
+### self.dge.look_up()
+
+Changes this character's `dge.direction` to `dge.direction.up`. This affects the return value funtions such as `self.dge.reach()`. This is also useful for simply turning a character in some direction without actually moving.
+
+---
+
+### self.dge.look_left()
+
+Changes this character's `dge.direction` to `dge.direction.left`. This affects the return value funtions such as `self.dge.reach()`. This is also useful for simply turning a character in some direction without actually moving.
+
+---
+
+### self.dge.look_down()
+
+Changes this character's `dge.direction` to `dge.direction.down`. This affects the return value funtions such as `self.dge.reach()`. This is also useful for simply turning a character in some direction without actually moving.
+
+---
+
+### self.dge.look_right()
+
+Changes this character's `dge.direction` to `dge.direction.right`. This affects the return value funtions such as `self.dge.reach()`. This is also useful for simply turning a character in some direction without actually moving.
 
 ---
 
 ### self.dge.update(dt)
 
-Updates all relevant properties including world position, input states, etc. Should be called every frame.
+Updates all relevant properties. Must be called in this character's `update()` function.
 
-#### Parameters
-1. `dt`: Seconds since last frame.
+#### Properties
+1. `dt`: Change in time since last frame.
 
 ---
 
 ### self.dge.unregister()
 
-Unregisters the current game object from the system. Should be called in `function final(self)`.
-
-## Example
-
-A minimalistic [example project](https://github.com/gymratgames/defold-grid-engine/tree/master/example) is available if you need additional help with configuration.
-
-Visit [my website](https://gymratgames.github.io/html/extensions.html#dge) to see an animated gif of the example project.
+Unregisters this character from DGE. Must be called in this character's `final()` function.
