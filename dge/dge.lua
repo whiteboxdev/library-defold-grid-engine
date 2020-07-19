@@ -207,6 +207,22 @@ function dge.register(config)
 		_input.right = false
 	end
 
+	function member.look_up()
+		_direction = dge.direction.up
+	end
+
+	function member.look_left()
+		_direction = dge.direction.left
+	end
+
+	function member.look_down()
+		_direction = dge.direction.down
+	end
+
+	function member.look_right()
+		_direction = dge.direction.right
+	end
+
 	function member.update(dt)
 		local complete = false
 		if _moving then
