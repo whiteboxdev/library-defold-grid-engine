@@ -1,5 +1,5 @@
 # Defold Grid Engine
-Defold Grid Engine (DGE) provides grid-based movement, interactions, and utility features to a Defold game engine project. Two examples of video game franchises that use grid-based systems are Pokémon and Fire Emblem.
+Defold Grid Engine (DGE) 0.1.0 provides grid-based movement, interactions, and utility features to a Defold game engine project. Two examples of video game franchises that use grid-based systems are Pokémon and Fire Emblem.
 
 Visit [my website](https://gymratgames.github.io/html/extensions.html#dge) to see an animated gif of the example project.  
 An [example project](https://github.com/gymratgames/defold-grid-engine/tree/master/example) is available if you need additional help with configuration.
@@ -48,6 +48,8 @@ end
 1. `size`: Size of your character in pixels.
 2. `direction`: Initial direction in which your character is looking.
 3. `speed`: Movement speed in grid boxes per second.
+
+DGE snaps your character into a grid box on registration. To do this, the bottom-center `stride x stride` square region of your character is used to properly position it onto the grid. This snapped position is important because it affects the return value of the `self.dge.reach()` function as well as other movement mechanics. In the future, this region will be modifiable and will be relevant in collision response, utility functions, and more.
 
 You may now utilize all of DGE's features by referencing `self.dge.FUNCTION_NAME()`.
 
