@@ -38,7 +38,7 @@ end
 1. `debug`: Allow debug information to be printed to the terminal.
 2. `stride`: Size of a single grid box (if you're using a tilemap, then this is likely equivalent to your tile size.)
 
-The `dge.set_collision()` function assigns a collision map to the grid. Collision maps consist of a table of lists of `integer`s, where each `integer` corresponds to a collision tag key. All tag keys can be found in the [`dge.tag` table](#dgetag). DGE will post a `dge.msg.collide_passable` or `dge.msg.collide_impassable` message to your character's `on_message()` function when your character collides with any grid box. Custom tags may be inserted into the `dge.tag` table if you wish to detect additional collision cases. See all [tag-related functions](#dgegettagname) for details.
+The `dge.set_collision()` function assigns a collision map to the grid. Collision maps consist of a table of lists of `integer`s, where each `integer` corresponds to a collision tag key. All tag keys can be found in the [`dge.tag` table](#dgetag). DGE will post a `dge.msg.collide_passable` or `dge.msg.collide_impassable` message to your character's `on_message()` function when your character collides with any grid box. Custom tags may be inserted into the `dge.tag` table if you wish to detect additional collision cases. See all [tag-related functions](#dgeget_tagname) for details.
 
 You may now register your characters:
 
@@ -110,7 +110,7 @@ dge.msg = {
 
 ### dge.tag
 
-Table for referencing collision tags. Each key (index of tag) corresponds to the integer used in your collision map, which was passed to `dge.set_collision()` when you initialized DGE. Custom tags may be inserted if you wish to detect additional collision cases. See all [tag-related functions](#dgegettagname) for details.
+Table for referencing collision tags. Each key (index of tag) corresponds to the integer used in your collision map, which was passed to `dge.set_collision()` when you initialized DGE. Custom tags may be inserted if you wish to detect additional collision cases. See all [tag-related functions](#dgeget_tagname) for details.
 
 ```
 dge.tag = {
