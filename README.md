@@ -100,13 +100,17 @@ Table for referencing messages posted to your character's `on_message()` functio
 dge.msg = {
     move_start = hash("move_start"),
     move_end = hash("move_end"),
-    move_repeat = hash("move_repeat")
+    move_repeat = hash("move_repeat"),
+    collide_passable = hash("collide_passable"),
+    collide_impassable = hash("collide_impassable")
 }
 ```
 
-1. `move_start`: Posted when the character starts moving from rest.
-2. `move_end`: Posted when the character stops moving.
-3. `move_repeat`: Posted when the character continues moving between grid boxes without stopping.
+1. `move_start`: Posted when your character starts moving from rest.
+2. `move_end`: Posted when your character stops moving.
+3. `move_repeat`: Posted when your character continues moving between grid boxes without stopping.
+4. `collide_passable`: Posted when your character collides with any passable grid box. The `message.name` field contains the tag's hashed `name` string.
+5. `collide_impassable`: Posted when your character collides with any impassable grid box. The `message.name` field contains the tag's hashed `name` string.
 
 ### dge.tag
 
