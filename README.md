@@ -1,5 +1,5 @@
 # Defold Grid Engine
-Defold Grid Engine (DGE) 0.1.0 provides grid-based movement, interactions, and utility features to a Defold game engine project. Two examples of video game franchises that use grid-based systems are Pokémon and Fire Emblem.
+Defold Grid Engine (DGE) 0.2.0 provides grid-based movement, interactions, and utility features to a Defold game engine project. Two examples of video game franchises that use grid-based systems are Pokémon and Fire Emblem.
 
 Visit [my website](https://gymratgames.github.io/html/extensions.html#dge) to see an animated gif of the example project.  
 An [example project](https://github.com/gymratgames/defold-grid-engine/tree/master/example) is available if you need additional help with configuration.
@@ -10,10 +10,10 @@ To install DGE into your project, add one of the following links to your `game.p
   - URL of a [specific release](https://github.com/gymratgames/defold-grid-engine/releases)
 
 ## Configuration
-Import the DGE Lua module into your character's script like so:  
+Import the DGE Lua module into your character's script:
 `local dge = require "dge.dge"`
 
-The grid system itself must be initialized before registering any characters. To initialize DGE, simply call `dge.init()` like so:
+The grid system itself must be initialized before registering any characters. To initialize DGE, call `dge.init()` followed by `dge.set_collision()`. Make sure to call `dge.init()` before registering any characters:
 
 ```
 local dge_config = {
@@ -21,17 +21,26 @@ local dge_config = {
     stride = 16
 }
 
+local collision = {
+    { 2, 2, 2, 2, 2 },
+    { 2, 1, 1, 1, 2 },
+    { 2, 1, 1, 1, 2 },
+    { 2, 1, 1, 1, 2 },
+    { 2, 2, 2, 2, 2 }
+}
+
 function init(self)
     dge.init(dge_config)
+    dge.set_collision(collision)
 end
 ```
 
 1. `debug`: Allow debug information to be printed to the terminal.
 2. `stride`: Size of a single grid box (if you're using a tilemap, then this is likely equivalent to your tile size.)
 
-Make sure to call `dge.init()` before registering any characters, as characters will not be registered correctly if `dge.init()` is called after character registration.
+The `dge.set_collision()` function assigns a collision map to the grid. Collision maps consist of a table of lists of `integer`s, where each `integer` corresponds to a collision tag key. All tag keys can be found in the [`dge.tag` table](#dgetag). DGE will post a `dge.msg.collide_passable` or `dge.msg.collide_impassable` message to your character's `on_message()` function when your character collides with any grid box. Custom tags may be inserted into the `dge.tag` table if you wish to detect additional collision cases. See all [tag-related functions](#dgegettagname) for details.
 
-You may now register your characters like so:
+You may now register your characters:
 
 ```
 local character_config = {
@@ -80,7 +89,7 @@ dge.direction = {
 }
 ```
 
-1. `value`: ID value of this direction.  
+1. `value`: Identification value of this direction.  
 2. `string`: String representation of this direction.
 
 ### dge.msg
@@ -98,6 +107,20 @@ dge.msg = {
 1. `move_start`: Posted when the character starts moving from rest.
 2. `move_end`: Posted when the character stops moving.
 3. `move_repeat`: Posted when the character continues moving between grid boxes without stopping.
+
+### dge.tag
+
+Table for referencing collision tags. Each key (index of tag) corresponds to the integer used in your collision map, which was passed to `dge.set_collision()` when you initialized DGE. Custom tags may be inserted if you wish to detect additional collision cases. See all [tag-related functions](#dgegettagname) for details.
+
+```
+dge.tag = {
+    { name = hash("passable"), passable = true },
+    { name = hash("impassable"), passable = false }
+}
+```
+
+1. `name`: Hash of a string representation of this tag.
+2. `passable`: `bool` indicating whether characters may pass through grid boxes assigned to this tag.
 
 ## API: Functions
 
@@ -128,6 +151,83 @@ Sets debug mode.
 
 #### Parameters
 1. `debug`: `bool` indicating whether to print debug information to the terminal.
+
+---
+
+### dge.get_collision()
+
+Gets the collision map passed to `dge.set_collision()`.
+
+#### Returns
+
+Returns a table of lists of `integer`s in the following format:
+
+```
+{
+    { <tag_key>, ... },
+    ...
+}
+```
+
+---
+
+### dge.set_collision(collision)
+
+Sets the collision map.
+
+#### Parameters
+1. `collision`: Table of lists of `integer`s in the following format:
+
+```
+{
+    { <tag_key>, ... },
+    ...
+}
+```
+
+---
+
+### dge.get_tag(name)
+
+Gets tag information.
+
+#### Parameters
+1. `name`: Hash of a string representation of a tag.
+
+#### Returns
+
+Returns a table in the following format:
+
+```
+{
+    key = <tag_key>,
+    value = { name = hash("<tag_name>"), passable = <bool> }
+}
+```
+
+---
+
+### dge.set_tag(name, passable)
+
+Sets an existing tag's `passable` flag.
+
+#### Parameters
+1. `name`: Hash of a string representation of a tag.
+2. `passable`: `bool` indicating whether characters may pass through grid boxes assigned to this tag.
+
+---
+
+### dge.add_tag(name, passable)
+
+Adds a tag to the `dge.tag` table.
+
+#### Parameters
+1. `name`: Hash of a string representation of a tag.
+2. `passable`: `bool` indicating whether characters may pass through grid boxes assigned to this tag.
+
+#### Returns
+
+Returns the key `integer` of the added tag. This key may be used in a collision map passed to `dge.set_collision()`.
 
 ---
 
@@ -183,6 +283,15 @@ Returns a table. See the [`dge.direction` table](#dgedirection) for details.
 
 ---
 
+### self.dge.set_direction(direction)
+
+Sets the `dge.direction` in which this character is looking. This affects the return value of funtions such as `self.dge.reach()`. This is also useful for simply turning a character in some direction without actually moving--hence its previous name `self.dge.look_DIRECTION()`.
+
+#### Parameters
+1. `direction`: Table referenced from the [`dge.direction` table](#dgedirection).
+
+---
+
 ### self.dge.get_speed()
 
 Gets the speed of this character in grid boxes per second.
@@ -219,6 +328,15 @@ Gets the position of this character in grid coordinates.
 #### Returns
 
 Returns a `vector3`.
+
+---
+
+### self.dge.set_position(grid_coordinates)
+
+Sets the position of this character in grid coordinates.
+
+#### Parameters
+1. `grid_coordinates`: `vector3` denoting the grid box to convert.
 
 ---
 
@@ -277,30 +395,6 @@ Stop moving downward.
 ### self.dge.stop_right()
 
 Stop moving rightward.
-
----
-
-### self.dge.look_up()
-
-Changes this character's `dge.direction` to `dge.direction.up`. This affects the return value of funtions such as `self.dge.reach()`. This is also useful for simply turning a character in some direction without actually moving.
-
----
-
-### self.dge.look_left()
-
-Changes this character's `dge.direction` to `dge.direction.left`. This affects the return value of funtions such as `self.dge.reach()`. This is also useful for simply turning a character in some direction without actually moving.
-
----
-
-### self.dge.look_down()
-
-Changes this character's `dge.direction` to `dge.direction.down`. This affects the return value of funtions such as `self.dge.reach()`. This is also useful for simply turning a character in some direction without actually moving.
-
----
-
-### self.dge.look_right()
-
-Changes this character's `dge.direction` to `dge.direction.right`. This affects the return value of funtions such as `self.dge.reach()`. This is also useful for simply turning a character in some direction without actually moving.
 
 ---
 
