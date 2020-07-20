@@ -188,6 +188,10 @@ function dge.register(config)
 		return _direction
 	end
 
+	function member.set_direction(direction)
+		_direction = direction
+	end
+
 	function member.get_speed()
 		return _speed
 	end
@@ -244,22 +248,6 @@ function dge.register(config)
 
 	function member.stop_right()
 		_input.right = false
-	end
-
-	function member.look_up()
-		_direction = dge.direction.up
-	end
-
-	function member.look_left()
-		_direction = dge.direction.left
-	end
-
-	function member.look_down()
-		_direction = dge.direction.down
-	end
-
-	function member.look_right()
-		_direction = dge.direction.right
 	end
 
 	function member.update(dt)
