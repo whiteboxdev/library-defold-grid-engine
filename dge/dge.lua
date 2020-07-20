@@ -2,7 +2,7 @@
 -- LICENSE
 ----------------------------------------------------------------------
 
--- Defold Grid Engine 0.1.0 provides grid-based movement, interactions, and utility features to a Defold game engine project.
+-- Defold Grid Engine 0.2.0 provides grid-based movement, interactions, and utility features to a Defold game engine project.
 -- Copyright (C) 2020  Klayton Kowalski
 
 -- This program is free software: you can redistribute it and/or modify
@@ -96,6 +96,14 @@ function dge.get_tag(name)
 	for key, value in ipairs(dge.tag) do
 		if value.name == name then
 			return { key = key, value = value }
+		end
+	end
+end
+
+function dge.set_tag(name, passable)
+	for key, value in ipairs(dge.tag) do
+		if value.name == name then
+			value.passable = passable
 		end
 	end
 end
@@ -194,6 +202,12 @@ function dge.register(config)
 
 	function member.get_position()
 		return dge.to_grid_coordinates(go.get_position() + _offset)
+	end
+
+	function member.set_position(grid_coordinates)
+		if not _moving then
+			go.set_position(dge.to_pixel_coordinates(grid_coordinates) - _offset)
+		end
 	end
 
 	function member.reach()
