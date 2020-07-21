@@ -140,6 +140,7 @@ function dge.register(config)
 	local _input = { up = false, left = false, down = false, right = false }
 	local _moving = false
 	local _lerp = { t = 0, v1 = vmath.vector3(), v2 = vmath.vector3() }
+	local _lerp_callback = { callback = nil, volatile = false }
 
 	----------------------------------------------------------------------
 	-- INSTANCE FUNCTIONS
@@ -179,6 +180,12 @@ function dge.register(config)
 			_moving = false
 			progress = _lerp.v2
 			complete = true
+			if _lerp_callback.callback then
+				_lerp_callback.callback()
+				if _lerp_callback.volatile then
+					_lerp_callback.callback = nil
+				end
+			end
 		end
 		go.set_position(progress)
 		return complete
@@ -202,6 +209,11 @@ function dge.register(config)
 
 	function member.get_moving()
 		return _moving
+	end
+
+	function member.set_lerp_callback(callback, volatile)
+		_lerp_callback.callback = callback
+		_lerp_callback.volatile = volatile
 	end
 
 	function member.get_position()
