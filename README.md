@@ -78,7 +78,7 @@ end
 
 ### dge.direction
 
-Table for referencing character orientation.
+Table for referencing character orientation:
 
 ```
 dge.direction = {
