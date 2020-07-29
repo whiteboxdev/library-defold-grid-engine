@@ -286,7 +286,7 @@ function dge.register(config)
 		if _input.up then
 			local position = member.get_position()
 			local tag = dge.tag[dge.collision[#dge.collision - position.y][position.x]]
-			local extra = dge.get_extra(position.x, position.y)
+			local extra = dge.extra[position.x .. position.y + 1]
 			if tag.passable then
 				msg.post("#", dge.msg.collide_passable, { name = tag.name, extra = extra })
 				_moving = true
@@ -299,7 +299,7 @@ function dge.register(config)
 		elseif _input.left then
 			local position = member.get_position()
 			local tag = dge.tag[dge.collision[#dge.collision - position.y + 1][position.x - 1]]
-			local extra = dge.get_extra(position.x, position.y)
+			local extra = dge.extra[position.x - 1 .. position.y]
 			if tag.passable then
 				msg.post("#", dge.msg.collide_passable, { name = tag.name, extra = extra })
 				_moving = true
@@ -312,7 +312,7 @@ function dge.register(config)
 		elseif _input.down then
 			local position = member.get_position()
 			local tag = dge.tag[dge.collision[#dge.collision - position.y + 2][position.x]]
-			local extra = dge.get_extra(position.x, position.y)
+			local extra = dge.extra[position.x .. position.y - 1]
 			if tag.passable then
 				msg.post("#", dge.msg.collide_passable, { name = tag.name, extra = extra })
 				_moving = true
@@ -325,7 +325,7 @@ function dge.register(config)
 		elseif _input.right then
 			local position = member.get_position()
 			local tag = dge.tag[dge.collision[#dge.collision - position.y + 1][position.x + 1]]
-			local extra = dge.get_extra(position.x, position.y)
+			local extra = dge.extra[position.x + 1 .. position.y]
 			if tag.passable then
 				msg.post("#", dge.msg.collide_passable, { name = tag.name, extra = extra })
 				_moving = true
