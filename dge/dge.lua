@@ -116,12 +116,16 @@ function dge.add_tag(name, passable)
 	end
 end
 
-function dge.get_extra()
-	return dge.extra
+function dge.get_extra(gx, gy)
+	return dge.extra[gx .. gy]
 end
 
-function dge.set_extra(extra)
-	dge.extra = extra
+function dge.set_extra(extra, gx, gy)
+	dge.extra[gx .. gy] = extra
+end
+
+function dge.clear_extra()
+	dge.extra = {}
 end
 
 function dge.to_pixel_coordinates(grid_coordinates)
@@ -282,7 +286,7 @@ function dge.register(config)
 		if _input.up then
 			local position = member.get_position()
 			local tag = dge.tag[dge.collision[#dge.collision - position.y][position.x]]
-			local extra = dge.extra[#dge.extra - position.y][position.x]
+			local extra = dge.extra[vmath.vector3(position.x, position.y, 0)]
 			if tag.passable then
 				msg.post("#", dge.msg.collide_passable, { name = tag.name, extra = extra })
 				_moving = true
@@ -295,7 +299,7 @@ function dge.register(config)
 		elseif _input.left then
 			local position = member.get_position()
 			local tag = dge.tag[dge.collision[#dge.collision - position.y + 1][position.x - 1]]
-			local extra = dge.extra[#dge.extra - position.y][position.x]
+			local extra = dge.extra[vmath.vector3(position.x, position.y, 0)]
 			if tag.passable then
 				msg.post("#", dge.msg.collide_passable, { name = tag.name, extra = extra })
 				_moving = true
@@ -308,7 +312,7 @@ function dge.register(config)
 		elseif _input.down then
 			local position = member.get_position()
 			local tag = dge.tag[dge.collision[#dge.collision - position.y + 2][position.x]]
-			local extra = dge.extra[#dge.extra - position.y][position.x]
+			local extra = dge.extra[vmath.vector3(position.x, position.y, 0)]
 			if tag.passable then
 				msg.post("#", dge.msg.collide_passable, { name = tag.name, extra = extra })
 				_moving = true
@@ -321,7 +325,7 @@ function dge.register(config)
 		elseif _input.right then
 			local position = member.get_position()
 			local tag = dge.tag[dge.collision[#dge.collision - position.y + 1][position.x + 1]]
-			local extra = dge.extra[#dge.extra - position.y][position.x]
+			local extra = dge.extra[vmath.vector3(position.x, position.y, 0)]
 			if tag.passable then
 				msg.post("#", dge.msg.collide_passable, { name = tag.name, extra = extra })
 				_moving = true

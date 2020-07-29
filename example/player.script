@@ -58,23 +58,6 @@ function init(self)
 		{ 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2 },
 		{ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 }
 	})
-	dge.set_extra({
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-		{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-	})
 	self.dge = dge.register(member_config)
 end
 
@@ -138,9 +121,9 @@ function on_message(self, message_id, message, sender)
 		elseif message_id == dge.msg.move_repeat then
 			print("Caught dge.msg.move_repeat.")
 		elseif message_id == dge.msg.collide_passable then
-			print("Caught dge.msg.collide_passable. " .. message.name .. " " .. message.extra)
+			print("Caught dge.msg.collide_passable. " .. message.name)
 		elseif message_id == dge.msg.collide_impassable then
-			print("Caught dge.msg.collide_impassable. " .. message.name .. " " .. message.extra)
+			print("Caught dge.msg.collide_impassable. " .. message.name)
 		end
 	end
 end
