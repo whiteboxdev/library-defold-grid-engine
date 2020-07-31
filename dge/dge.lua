@@ -195,10 +195,13 @@ function dge.register(config)
 			progress = _lerp.v2
 			complete = true
 			if #_lerp_callback > 0 then
-				for key, value in ipairs(_lerp_callback) do
-					value.callback()
-					if value.volatile then
-						table.remove(_lerp_callback, key)
+				local i = 1
+				while i <= #_lerp_callback do
+					_lerp_callback[i].callback()
+					if _lerp_callback[i].volatile then
+						table.remove(_lerp_callback, i)
+					else
+						i = i + 1
 					end
 				end
 			end
