@@ -154,7 +154,7 @@ function dge.register(config)
 	local _moving = false
 	local _movement_gate = true
 	local _lerp = { t = 0, v1 = vmath.vector3(), v2 = vmath.vector3() }
-	local _lerp_callback = { callback = nil, volatile = false }
+	local _lerp_callback = {}
 
 	----------------------------------------------------------------------
 	-- INSTANCE FUNCTIONS
@@ -194,10 +194,12 @@ function dge.register(config)
 			_moving = false
 			progress = _lerp.v2
 			complete = true
-			if _lerp_callback.callback then
-				_lerp_callback.callback()
-				if _lerp_callback.volatile then
-					_lerp_callback.callback = nil
+			if #_lerp_callback > 0 then
+				for key, value in ipairs(_lerp_callback) do
+					value.callback()
+					if value.volatile then
+						table.remove(_lerp_callback, key)
+					end
 				end
 			end
 		end
@@ -230,9 +232,16 @@ function dge.register(config)
 		_input = { up = false, left = false, down = false, right = false }
 	end
 
-	function member.set_lerp_callback(callback, volatile)
-		_lerp_callback.callback = callback
-		_lerp_callback.volatile = volatile
+	function member.add_lerp_callback(callback, volatile)
+		table.insert(_lerp_callback, { callback = callback, volatile = volatile })
+	end
+
+	function member.remove_lerp_callback(callback, volatile)
+		for key, value in ipairs(_lerp_callback) do
+			if value.callback == callback and value.volatile == volatile then
+				table.remove(_lerp_callback, key)
+			end
+		end
 	end
 
 	function member.get_position()
