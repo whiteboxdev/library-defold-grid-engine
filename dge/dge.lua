@@ -227,6 +227,7 @@ function dge.register(config)
 
 	function member.set_movement_gate(gate)
 		_movement_gate = gate
+		_input = { up = false, left = false, down = false, right = false }
 	end
 
 	function member.set_lerp_callback(callback, volatile)
