@@ -152,6 +152,7 @@ function dge.register(config)
 	local _offset = vmath.vector3(0, dge.stride * 0.5 - _size.y * 0.5, 0)
 	local _input = { up = false, left = false, down = false, right = false }
 	local _moving = false
+	local _movement_gate = true
 	local _lerp = { t = 0, v1 = vmath.vector3(), v2 = vmath.vector3() }
 	local _lerp_callback = { callback = nil, volatile = false }
 
@@ -224,6 +225,10 @@ function dge.register(config)
 		return _moving
 	end
 
+	function member.set_movement_gate(gate)
+		_movement_gate = gate
+	end
+
 	function member.set_lerp_callback(callback, volatile)
 		_lerp_callback.callback = callback
 		_lerp_callback.volatile = volatile
@@ -244,19 +249,27 @@ function dge.register(config)
 	end
 
 	function member.move_up()
-		_input.up = true
+		if _movement_gate then
+			_input.up = true
+		end
 	end
 
 	function member.move_left()
-		_input.left = true
+		if _movement_gate then
+			_input.left = true
+		end
 	end
 
 	function member.move_down()
-		_input.down = true
+		if _movement_gate then
+			_input.down = true
+		end
 	end
 
 	function member.move_right()
-		_input.right = true
+		if _movement_gate then
+			_input.right = true
+		end
 	end
 
 	function member.stop_up()
