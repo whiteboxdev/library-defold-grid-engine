@@ -1,8 +1,10 @@
 # Defold Grid Engine
-Defold Grid Engine (DGE) 0.2.0 provides grid-based movement, interactions, and utility features to a Defold game engine project. Two examples of video game franchises that use grid-based systems are Pokémon and Fire Emblem.
+Defold Grid Engine (DGE) 0.3.0 provides grid-based movement, interactions, and utility features to a Defold game engine project. Two examples of video game franchises that use grid-based systems are Pokémon and Fire Emblem.
 
 Visit [my website](https://gymratgames.github.io/html/extensions.html#dge) to see an animated gif of the example project.  
 An [example project](https://github.com/gymratgames/defold-grid-engine/tree/master/example) is available if you need additional help with configuration.
+
+Please click the "Star" button on GitHub if you find this asset to be useful!
 
 ## Installation
 To install DGE into your project, add one of the following links to your `game.project` dependencies:
@@ -38,7 +40,26 @@ end
 1. `debug`: Allow debug information to be printed to the terminal.
 2. `stride`: Size of a single grid box (if you're using a tilemap, then this is likely equivalent to your tile size.)
 
-The `dge.set_collision()` function assigns a collision map to the grid. Collision maps consist of a table of lists of `integer`s, where each `integer` corresponds to a collision tag key. All tag keys can be found in the [`dge.tag` table](#dgetag). DGE will post a `dge.msg.collide_passable` or `dge.msg.collide_impassable` message to your character's `on_message()` function when your character collides with any grid box. Custom tags may be inserted into the `dge.tag` table if you wish to detect additional collision cases. See all [tag-related functions](#dgeget_tagname) for details.
+The `dge.set_collision()` function assigns a collision map to the grid. Collision maps consist of a table of lists of `integer`s, each of which corresponds to a collision tag. All tags can be found in the [`dge.tag` table](#dgetag).
+
+DGE will post a `dge.msg.collide_passable` or `dge.msg.collide_impassable` message to your character's `on_message()` function when your character collides with any grid box. Custom tags may be inserted into the `dge.tag` table if you wish to detect additional collision cases. See all [tag-related functions](#dgeget_tagname) for details.
+
+In addition to the collision table, you may also insert user-defined data at any grid position into the `extra` table using `dge.set_extra()`. For example, to return a table of tilemap ids to warp to when a character steps on a certain grid box:
+
+```
+dge.set_extra({ tilemap_1 = "idTilemap1", tilemap_2 = "idTilemap2", count = 2}, 15, 7)
+
+function on_message(self, message_id, message, sender)
+    if message_id == dge.msg.collide_passable then
+        local index = pick_random_map(message.extra.count)
+        if index == 1 then
+            warp_to_map(message.extra.tilemap_1)
+        elseif index == 2 then
+            warp_to_map(message.extra.tilemap_2)
+        end
+    end
+end
+```
 
 You may now register your characters:
 
@@ -58,7 +79,7 @@ end
 2. `direction`: Initial direction in which your character is looking.
 3. `speed`: Movement speed in grid boxes per second.
 
-DGE snaps your character into a grid box on registration. To do this, the bottom-center `stride x stride` square region of your character is used to properly position it onto the grid. This snapped position is important because it affects the return value of the `self.dge.reach()` function as well as other movement mechanics. In the future, this region will be modifiable and will be relevant in collision response, utility functions, and more.
+DGE snaps your character into a grid box on registration. To do this, the bottom-center `stride x stride` square region of your character is used to properly position it onto the grid.
 
 You may now utilize all of DGE's features by referencing `self.dge.FUNCTION_NAME()`.
 
@@ -109,8 +130,8 @@ dge.msg = {
 1. `move_start`: Posted when your character starts moving from rest.
 2. `move_end`: Posted when your character stops moving.
 3. `move_repeat`: Posted when your character continues moving between grid boxes without stopping.
-4. `collide_passable`: Posted when your character collides with any passable grid box. The `message.name` field contains the tag's hashed `name` string.
-5. `collide_impassable`: Posted when your character collides with any impassable grid box. The `message.name` field contains the tag's hashed `name` string.
+4. `collide_passable`: Posted when your character collides with any passable grid box. The `message.name` field contains the tag's hashed `name` string. The `message.extra` field contains the user-defined data at this grid position or `nil`.
+5. `collide_impassable`: Posted when your character collides with any impassable grid box. The `message.name` field contains the tag's hashed `name` string. The `message.extra` field contains the user-defined data at this grid position or `nil`.
 
 ### dge.tag
 
@@ -235,6 +256,37 @@ Returns the key `integer` of the added tag. This key may be used in a collision 
 
 ---
 
+### dge.get_extra(gx, gy)
+
+Gets extra data.
+
+#### Parameters
+1. `gx`: X-coordinate of grid box.
+2. `gy`: Y-coordinate of grid box.
+
+#### Returns
+
+Returns user-defined data.
+
+---
+
+### dge.set_extra(extra, gx, gy)
+
+Sets extra data.
+
+#### Parameters
+1. `extra`: User-defined data.
+2. `gx`: X-coordinate of grid box.
+3. `gy`: Y-coordinate of grid box.
+
+---
+
+### dge.clear_extra()
+
+Clears all extra data.
+
+---
+
 ### dge.to_pixel_coordinates(grid_coordinates)
 
 Converts grid coordinates to pixel coordinates. The returned pixel coordinates point to the center of the grid box.
@@ -322,6 +374,35 @@ Checks if this character is moving.
 #### Returns
 
 Returns a `bool`.
+
+---
+
+### self.dge.set_movement_gate(gate)
+
+Toggles this character's movement ability.
+
+#### Parameters
+1. `gate`: `bool` indicating whether to allow movement.
+
+---
+
+### self.dge.add_lerp_callback(callback, volatile)
+
+Adds a lerp callback, which triggers upon each complete character movement.
+
+#### Parameters
+1. `callback`: Callback function.
+2. `volatile`: `bool` indicating whether to remove this callback after being triggered once.
+
+---
+
+### self.dge.remove_lerp_callback(callback, volatile)
+
+Removes a lerp callback, which triggers upon each complete character movement. Does nothing if the specified callback does not exist.
+
+#### Parameters
+1. `callback`: Callback function.
+2. `volatile`: `bool` indicating whether to remove this callback after being triggered once.
 
 ---
 

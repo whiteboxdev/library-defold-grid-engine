@@ -2,7 +2,7 @@
 -- LICENSE
 ----------------------------------------------------------------------
 
--- Defold Grid Engine 0.2.0 provides grid-based movement, interactions, and utility features to a Defold game engine project.
+-- Defold Grid Engine 0.3.0 provides grid-based movement, interactions, and utility features to a Defold game engine project.
 -- Copyright (C) 2020  Klayton Kowalski
 
 -- This program is free software: you can redistribute it and/or modify
@@ -17,6 +17,8 @@
 
 -- You should have received a copy of the GNU Affero General Public License
 -- along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+-- https://github.com/gymratgames/defold-grid-engine
 
 ----------------------------------------------------------------------
 -- DEPENDENCIES
