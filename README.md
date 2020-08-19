@@ -6,6 +6,8 @@ An [example project](https://github.com/gymratgames/defold-grid-engine/tree/mast
 
 Please click the "Star" button on GitHub if you find this asset to be useful!
 
+![alt text](https://github.com/gymratgames/defold-grid-engine/blob/master/assets/thumbnail.png?raw=true)
+
 ## Installation
 To install DGE into your project, add one of the following links to your `game.project` dependencies:
   - https://github.com/gymratgames/defold-grid-engine/archive/master.zip
