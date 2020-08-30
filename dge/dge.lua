@@ -195,9 +195,9 @@ function dge.register(config)
 
 	local function lerp(dt)
 		local complete = false
-		_lerp.t = _lerp.t + dt * _speed
+		_lerp.t = _speed == 0 and 1 or _lerp.t + dt * _speed
 		local progress = vmath.lerp(_lerp.t, _lerp.v1, _lerp.v2)
-		if _lerp.t > 1 then
+		if _lerp.t >= 1 then
 			_lerp.t = 0
 			_moving = false
 			progress = _lerp.v2
