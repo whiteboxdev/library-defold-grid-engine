@@ -63,7 +63,7 @@ function on_message(self, message_id, message, sender)
 end
 ```
 
-You may now register your characters:
+Configuration is complete. Next step is to register your characters:
 
 ```
 local character_config = {
@@ -79,7 +79,7 @@ end
 
 1. `size`: Size of your character in pixels.
 2. `direction`: Initial direction in which your character is looking.
-3. `speed`: Movement speed in grid boxes per second.
+3. `speed`: Movement speed in grid boxes per second. If `speed = 0`, then movement is instant.
 
 DGE snaps your character into a grid box on registration. To do this, the bottom-center `stride x stride` square region of your character is used to properly position it onto the grid.
 
@@ -323,7 +323,7 @@ Registers the current game object in the grid system.
 1. `config`: Table for setting up this character's properties.
     1. `size`: `vector3` of `integer`s specifying this character's dimensions in pixels.
     2. `direction`: Initial `dge.direction` in which your character is looking.
-    3. `speed`: Movement speed in grid boxes per second.
+    3. `speed`: Movement speed in grid boxes per second. If `speed = 0`, then movement is instant.
 
 #### Returns
 
@@ -365,7 +365,7 @@ Returns a number.
 Sets the speed of this character in grid boxes per second.
 
 #### Parameters
-1. `speed`: Speed of this character in grid boxes per second.
+1. `speed`: Speed of this character in grid boxes per second. If `speed = 0`, then movement is instant.
 
 ---
 
