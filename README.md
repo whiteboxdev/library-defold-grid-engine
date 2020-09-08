@@ -4,7 +4,8 @@ Defold Grid Engine (DGE) 0.3.0 provides grid-based movement, interactions, and u
 Visit [my website](https://gymratgames.github.io/html/extensions.html#dge) to see an animated gif of the example project.  
 An [example project](https://github.com/gymratgames/defold-grid-engine/tree/master/example) is available if you need additional help with configuration.
 
-Please click the "Star" button on GitHub if you find this asset to be useful!
+Please click the "Star" button on GitHub if you find this asset to be useful!  
+Consider supporting me on [Patreon](https://www.patreon.com/klaytonkowalski) if you like my work.
 
 ![alt text](https://github.com/gymratgames/defold-grid-engine/blob/master/assets/thumbnail.png?raw=true)
 
