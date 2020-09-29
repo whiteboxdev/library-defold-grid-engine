@@ -33,7 +33,22 @@
 local dge = {}
 
 ----------------------------------------------------------------------
--- CONSTANTS
+-- PROPERTIES
+----------------------------------------------------------------------
+
+dge.member = {}
+dge.debug = false
+dge.stride = 0
+dge.collision_map = {}
+dge.extra = {}
+
+dge.tag = {
+	{ name = hash("passable"), passable = true },
+	{ name = hash("impassable"), passable = false }
+}
+
+----------------------------------------------------------------------
+-- CONSTANT VALUES
 ----------------------------------------------------------------------
 
 local neighbor = {
@@ -42,16 +57,6 @@ local neighbor = {
 	[4] = vmath.vector3(0, -1, 0),
 	[8] = vmath.vector3(1, 0, 0)
 }
-
-----------------------------------------------------------------------
--- PROPERTIES
-----------------------------------------------------------------------
-
-dge.member = {}
-dge.debug = false
-dge.stride = 0
-dge.collision = {}
-dge.extra = {}
 
 dge.direction = {
 	up = { value = 1, string = "up" },
@@ -68,13 +73,41 @@ dge.msg = {
 	collide_impassable = hash("collide_impassable")
 }
 
-dge.tag = {
-	{ name = hash("passable"), passable = true },
-	{ name = hash("impassable"), passable = false }
-}
+----------------------------------------------------------------------
+-- CONSTANT FUNCTIONS
+----------------------------------------------------------------------
+
+function dge.is_debug_enabled()
+	return dge.debug
+end
+
+function dge.get_collision_map()
+	return dge.collision_map
+end
+
+function dge.get_tag(name)
+	for key, value in ipairs(dge.tag) do
+		if value.name == name then
+			return { key = key, value = value }
+		end
+	end
+end
+
+function dge.get_extra(gx, gy)
+	return dge.extra[gx .. gy]
+end
+
+function dge.to_pixel_coordinates(grid_coordinates)
+	local half_stride = dge.stride * 0.5
+	return vmath.vector3(grid_coordinates.x * dge.stride - half_stride, grid_coordinates.y * dge.stride - half_stride, grid_coordinates.z)
+end
+
+function dge.to_grid_coordinates(pixel_coordinates)
+	return vmath.vector3(math.floor(pixel_coordinates.x / dge.stride) + 1, math.floor(pixel_coordinates.y / dge.stride) + 1, pixel_coordinates.z)
+end
 
 ----------------------------------------------------------------------
--- FUNCTIONS
+-- VOLATILE FUNCTIONS
 ----------------------------------------------------------------------
 
 function dge.init(config)
@@ -85,28 +118,12 @@ function dge.init(config)
 	end
 end
 
-function dge.get_debug()
-	return dge.debug
-end
-
-function dge.set_debug(debug)
+function dge.set_debug(flag)
 	dge.debug = flag
 end
 
-function dge.get_collision()
-	return dge.collision
-end
-
-function dge.set_collision(collision)
-	dge.collision = collision
-end
-
-function dge.get_tag(name)
-	for key, value in ipairs(dge.tag) do
-		if value.name == name then
-			return { key = key, value = value }
-		end
-	end
+function dge.set_collision_map(collision_map)
+	dge.collision_map = collision_map
 end
 
 function dge.set_tag(name, passable)
@@ -124,25 +141,12 @@ function dge.add_tag(name, passable)
 	end
 end
 
-function dge.get_extra(gx, gy)
-	return dge.extra[gx .. gy]
-end
-
 function dge.set_extra(extra, gx, gy)
 	dge.extra[gx .. gy] = extra
 end
 
 function dge.clear_extra()
 	dge.extra = {}
-end
-
-function dge.to_pixel_coordinates(grid_coordinates)
-	local half_stride = dge.stride * 0.5
-	return vmath.vector3(grid_coordinates.x * dge.stride - half_stride, grid_coordinates.y * dge.stride - half_stride, grid_coordinates.z)
-end
-
-function dge.to_grid_coordinates(pixel_coordinates)
-	return vmath.vector3(math.floor(pixel_coordinates.x / dge.stride) + 1, math.floor(pixel_coordinates.y / dge.stride) + 1, pixel_coordinates.z)
 end
 
 function dge.register(config)
@@ -165,7 +169,7 @@ function dge.register(config)
 	local _lerp_callback = {}
 
 	----------------------------------------------------------------------
-	-- INSTANCE FUNCTIONS
+	-- INSTANCE CONSTANT FUNCTIONS
 	----------------------------------------------------------------------
 
 	local function input_to_direction(input)
@@ -185,6 +189,30 @@ function dge.register(config)
 			end
 		end
 	end
+
+	function member.get_direction()
+		return _direction
+	end
+
+	function member.get_speed()
+		return _speed
+	end
+
+	function member.is_moving()
+		return _moving
+	end
+
+	function member.get_position()
+		return dge.to_grid_coordinates(go.get_position() + _offset)
+	end
+
+	function member.reach()
+		return member.get_position() + neighbor[_direction.value]
+	end
+
+	----------------------------------------------------------------------
+	-- INSTANCE VOLATILE FUNCTIONS
+	----------------------------------------------------------------------
 
 	local function snap()
 		go.set_position(dge.to_pixel_coordinates(dge.to_grid_coordinates(go.get_position() + _offset)) - _offset)
@@ -218,27 +246,15 @@ function dge.register(config)
 		return complete
 	end
 
-	function member.get_direction()
-		return _direction
-	end
-
 	function member.set_direction(direction)
 		_direction = direction
-	end
-
-	function member.get_speed()
-		return _speed
 	end
 
 	function member.set_speed(speed)
 		_speed = speed
 	end
 
-	function member.get_moving()
-		return _moving
-	end
-
-	function member.set_movement_gate(gate)
+	function member.set_movement_gate(flag)
 		_movement_gate = gate
 		_input = { up = false, left = false, down = false, right = false }
 	end
@@ -255,18 +271,10 @@ function dge.register(config)
 		end
 	end
 
-	function member.get_position()
-		return dge.to_grid_coordinates(go.get_position() + _offset)
-	end
-
 	function member.set_position(grid_coordinates)
 		if not _moving then
 			go.set_position(dge.to_pixel_coordinates(grid_coordinates) - _offset)
 		end
-	end
-
-	function member.reach()
-		return member.get_position() + neighbor[_direction.value]
 	end
 
 	function member.move_up()
@@ -319,7 +327,7 @@ function dge.register(config)
 		end
 		if _input.up then
 			local position = member.get_position()
-			local tag = dge.tag[dge.collision[#dge.collision - position.y][position.x]]
+			local tag = dge.tag[dge.collision_map[#dge.collision_map - position.y][position.x]]
 			local extra = dge.extra[position.x .. position.y + 1]
 			if tag.passable then
 				msg.post("#", dge.msg.collide_passable, { name = tag.name, extra = extra })
@@ -332,7 +340,7 @@ function dge.register(config)
 			end
 		elseif _input.left then
 			local position = member.get_position()
-			local tag = dge.tag[dge.collision[#dge.collision - position.y + 1][position.x - 1]]
+			local tag = dge.tag[dge.collision_map[#dge.collision_map - position.y + 1][position.x - 1]]
 			local extra = dge.extra[position.x - 1 .. position.y]
 			if tag.passable then
 				msg.post("#", dge.msg.collide_passable, { name = tag.name, extra = extra })
@@ -345,7 +353,7 @@ function dge.register(config)
 			end
 		elseif _input.down then
 			local position = member.get_position()
-			local tag = dge.tag[dge.collision[#dge.collision - position.y + 2][position.x]]
+			local tag = dge.tag[dge.collision_map[#dge.collision_map - position.y + 2][position.x]]
 			local extra = dge.extra[position.x .. position.y - 1]
 			if tag.passable then
 				msg.post("#", dge.msg.collide_passable, { name = tag.name, extra = extra })
@@ -358,7 +366,7 @@ function dge.register(config)
 			end
 		elseif _input.right then
 			local position = member.get_position()
-			local tag = dge.tag[dge.collision[#dge.collision - position.y + 1][position.x + 1]]
+			local tag = dge.tag[dge.collision_map[#dge.collision_map - position.y + 1][position.x + 1]]
 			local extra = dge.extra[position.x + 1 .. position.y]
 			if tag.passable then
 				msg.post("#", dge.msg.collide_passable, { name = tag.name, extra = extra })

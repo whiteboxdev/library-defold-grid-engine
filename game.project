@@ -13,7 +13,7 @@ height = 720
 input_method = HiddenInputField
 
 [project]
-title = Defold Grid Engine - Example
+title = Defold Grid Engine
 dependencies = https://github.com/rgrams/rendercam/archive/master.zip
 
 [library]
