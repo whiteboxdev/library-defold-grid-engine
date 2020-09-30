@@ -1,5 +1,5 @@
 # Defold Grid Engine
-Defold Grid Engine (DGE) 0.3.0 provides grid-based movement, interactions, and utility features to a Defold game engine project. Two examples of video game franchises that use grid-based systems are Pokémon and Fire Emblem.
+Defold Grid Engine (DGE) 0.3.1 provides grid-based movement, interactions, and utility features to a Defold game engine project. Two examples of video game franchises that use grid-based systems are Pokémon and Fire Emblem.
 
 Visit [my website](https://gymratgames.github.io/html/extensions.html#dge) to see an animated gif of the example project.  
 An [example project](https://github.com/gymratgames/defold-grid-engine/tree/master/example) is available if you need additional help with configuration.
@@ -18,7 +18,7 @@ To install DGE into your project, add one of the following links to your `game.p
 Import the DGE Lua module into your character's script:
 `local dge = require "dge.dge"`
 
-The grid system itself must be initialized before registering any characters. To initialize DGE, call `dge.init()` followed by `dge.set_collision_map()`. Make sure to call `dge.init()` before registering any characters:
+The grid system itself must be initialized before registering any characters. To initialize DGE, call `dge.init()` along with a `config` table:
 
 ```
 local dge_config = {
@@ -43,28 +43,13 @@ end
 1. `debug`: Allow debug information to be printed to the terminal.
 2. `stride`: Size of a single grid box (if you're using a tilemap, then this is likely equivalent to your tile size.)
 
-The `dge.set_collision_map()` function assigns a collision map to the grid. Collision maps consist of a table of lists of integers, each of which corresponds to a collision tag. All tags can be found in the `dge.tag` [table](#dgetag).
+The `dge.set_collision_map()` function assigns a collision map to the grid. Collision maps consist of a two-dimensional array of integers, each of which corresponds to a collision tag. All tags can be found in the `dge.tag` [table](#dgetag). **Note** that a collision map is not required if you are not interested in adding collisions to your game.
 
-DGE will post a `dge.msg.collide_passable` or `dge.msg.collide_impassable` message to your character's `on_message()` function when your character collides with any grid box. Custom tags may be inserted into the `dge.tag` table if you wish to detect additional collision cases. See all [tag-related functions](#dgeget_tagname) for details.
+DGE will post a `dge.msg.collide_passable` or `dge.msg.collide_impassable` message to your character's `on_message()` function when your character collides with any grid box. If you did not specify a collision map, then `dge.msg.collide_none` will be posted instead. Custom tags may be inserted into the `dge.tag` table if you wish to detect additional collision cases. See all [tag-related functions](#dgeget_tagname) for details.
 
-In addition to the collision map, you may also insert user-defined data at any grid position into the `extra` table using `dge.set_extra()`. For example, to return a table of tilemap ids to warp to when a character steps on a certain grid box:
+You may also insert user-defined data at any grid position into the `extra` table using `dge.set_extra()`. This may be useful for adding semantics to your tiles, such as specifying warp information to a door tile. See all [extra-related functions](#dgeget_extragx-gy) for details.
 
-```
-dge.set_extra({ tilemap_1 = "idTilemap1", tilemap_2 = "idTilemap2", count = 2}, 15, 7)
-
-function on_message(self, message_id, message, sender)
-    if message_id == dge.msg.collide_passable then
-        local index = pick_random_map(message.extra.count)
-        if index == 1 then
-            warp_to_map(message.extra.tilemap_1)
-        elseif index == 2 then
-            warp_to_map(message.extra.tilemap_2)
-        end
-    end
-end
-```
-
-Configuration is complete. Next step is to register your characters:
+Configuration is now complete. Next step is to register your characters:
 
 ```
 local character_config = {
@@ -84,7 +69,7 @@ end
 
 DGE snaps your character into a grid box on registration. To do this, the bottom-center <stride> x <stride> square region of your character is used to properly position it onto the grid.
 
-You may now utilize all of DGE's features by referencing `self.dge.FUNCTION_NAME()`.
+You may now utilize all character-specific functions by referencing `self.dge.FUNCTION_NAME()`.
 
 In addition to initialization and registration, you must also include updating and unregistration in your character's script:
 
@@ -125,6 +110,7 @@ dge.msg = {
     move_start = hash("move_start"),
     move_end = hash("move_end"),
     move_repeat = hash("move_repeat"),
+    collide_none = hash("collide_none"),
     collide_passable = hash("collide_passable"),
     collide_impassable = hash("collide_impassable")
 }
@@ -133,8 +119,9 @@ dge.msg = {
 1. `move_start`: Posted when your character starts moving from rest.
 2. `move_end`: Posted when your character stops moving.
 3. `move_repeat`: Posted when your character continues moving between grid boxes without stopping.
-4. `collide_passable`: Posted when your character collides with any passable grid box. The `message.name` field contains the tag's hashed `name` string. The `message.extra` field contains the user-defined data at this grid position or `nil`.
-5. `collide_impassable`: Posted when your character collides with any impassable grid box. The `message.name` field contains the tag's hashed `name` string. The `message.extra` field contains the user-defined data at this grid position or `nil`.
+4. `collide_none`: Posted when your character collides with any grid box which lies outside of the supplied collision map. The `message.extra` field contains the user-defined data at this grid position or `nil`.
+5. `collide_passable`: Posted when your character collides with any passable grid box. The `message.name` field contains the tag's hashed `name` string. The `message.extra` field contains the user-defined data at this grid position or `nil`.
+6. `collide_impassable`: Posted when your character collides with any impassable grid box. The `message.name` field contains the tag's hashed `name` string. The `message.extra` field contains the user-defined data at this grid position or `nil`.
 
 ### dge.tag
 
@@ -313,6 +300,20 @@ Converts pixel coordinates to grid coordinates.
 #### Returns
 
 Returns a `vector3`.
+
+---
+
+### dge.is_within_collision_map_bounds(gx, gy)
+
+Checks if the grid coordinates <gx, gy> lie inside the collision map bounds.
+
+#### Parameters
+1. `gx`: X-coordinate of grid box.
+2. `gy`: Y-coordinate of grid box.
+
+#### Returns
+
+Returns a `bool`.
 
 ---
 
