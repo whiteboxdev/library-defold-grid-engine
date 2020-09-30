@@ -69,6 +69,7 @@ dge.msg = {
 	move_start = hash("move_start"),
 	move_end = hash("move_end"),
 	move_repeat = hash("move_repeat"),
+	collide_none = hash("collide_none"),
 	collide_passable = hash("collide_passable"),
 	collide_impassable = hash("collide_impassable")
 }
@@ -104,6 +105,10 @@ end
 
 function dge.to_grid_coordinates(pixel_coordinates)
 	return vmath.vector3(math.floor(pixel_coordinates.x / dge.stride) + 1, math.floor(pixel_coordinates.y / dge.stride) + 1, pixel_coordinates.z)
+end
+
+function dge.is_within_collision_map_bounds(gx, gy)
+	return 1 <= gy and gy <= #dge.collision_map and 1 <= gx and gx <= #dge.collision_map[gy]
 end
 
 ----------------------------------------------------------------------
@@ -327,9 +332,17 @@ function dge.register(config)
 		end
 		if _input.up then
 			local position = member.get_position()
-			local tag = dge.tag[dge.collision_map[#dge.collision_map - position.y][position.x]]
+			local tag = nil
+			if dge.is_within_collision_map_bounds(position.x, #dge.collision_map - position.y) then
+				tag = dge.tag[dge.collision_map[#dge.collision_map - position.y][position.x]]
+			end
 			local extra = dge.extra[position.x .. position.y + 1]
-			if tag.passable then
+			if not tag then
+				msg.post("#", dge.msg.collide_none, { extra = extra })
+				_moving = true
+				_lerp.v1 = go.get_position()
+				_lerp.v2 = _lerp.v1 + vmath.vector3(0, dge.stride, 0)
+			elseif tag.passable then
 				msg.post("#", dge.msg.collide_passable, { name = tag.name, extra = extra })
 				_moving = true
 				_lerp.v1 = go.get_position()
@@ -340,9 +353,17 @@ function dge.register(config)
 			end
 		elseif _input.left then
 			local position = member.get_position()
-			local tag = dge.tag[dge.collision_map[#dge.collision_map - position.y + 1][position.x - 1]]
+			local tag = nil
+			if dge.is_within_collision_map_bounds(position.x - 1, #dge.collision_map - position.y + 1) then
+				tag = dge.tag[dge.collision_map[#dge.collision_map - position.y + 1][position.x - 1]]
+			end
 			local extra = dge.extra[position.x - 1 .. position.y]
-			if tag.passable then
+			if not tag then
+				msg.post("#", dge.msg.collide_none, { extra = extra })
+				_moving = true
+				_lerp.v1 = go.get_position()
+				_lerp.v2 = _lerp.v1 + vmath.vector3(-dge.stride, 0, 0)
+			elseif tag.passable then
 				msg.post("#", dge.msg.collide_passable, { name = tag.name, extra = extra })
 				_moving = true
 				_lerp.v1 = go.get_position()
@@ -353,9 +374,17 @@ function dge.register(config)
 			end
 		elseif _input.down then
 			local position = member.get_position()
-			local tag = dge.tag[dge.collision_map[#dge.collision_map - position.y + 2][position.x]]
+			local tag = nil
+			if dge.is_within_collision_map_bounds(position.x, #dge.collision_map - position.y + 2) then
+				tag = dge.tag[dge.collision_map[#dge.collision_map - position.y + 2][position.x]]
+			end
 			local extra = dge.extra[position.x .. position.y - 1]
-			if tag.passable then
+			if not tag then
+				msg.post("#", dge.msg.collide_none, { extra = extra })
+				_moving = true
+				_lerp.v1 = go.get_position()
+				_lerp.v2 = _lerp.v1 + vmath.vector3(0, -dge.stride, 0)
+			elseif tag.passable then
 				msg.post("#", dge.msg.collide_passable, { name = tag.name, extra = extra })
 				_moving = true
 				_lerp.v1 = go.get_position()
@@ -366,9 +395,17 @@ function dge.register(config)
 			end
 		elseif _input.right then
 			local position = member.get_position()
-			local tag = dge.tag[dge.collision_map[#dge.collision_map - position.y + 1][position.x + 1]]
+			local tag = nil
+			if dge.is_within_collision_map_bounds(position.x + 1, #dge.collision_map - position.y + 1) then
+				tag = dge.tag[dge.collision_map[#dge.collision_map - position.y + 1][position.x + 1]]
+			end
 			local extra = dge.extra[position.x + 1 .. position.y]
-			if tag.passable then
+			if not tag then
+				msg.post("#", dge.msg.collide_none, { extra = extra })
+				_moving = true
+				_lerp.v1 = go.get_position()
+				_lerp.v2 = _lerp.v1 + vmath.vector3(dge.stride, 0, 0)
+			elseif tag.passable then
 				msg.post("#", dge.msg.collide_passable, { name = tag.name, extra = extra })
 				_moving = true
 				_lerp.v1 = go.get_position()
