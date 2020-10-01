@@ -40,6 +40,7 @@ dge.member = {}
 dge.debug = false
 dge.stride = 0
 dge.collision_map = {}
+dge.collision_map_offset = vmath.vector3()
 dge.extra = {}
 
 dge.tag = {
@@ -108,7 +109,9 @@ function dge.to_grid_coordinates(pixel_coordinates)
 end
 
 function dge.is_within_collision_map_bounds(gx, gy)
-	return 1 <= gy and gy <= #dge.collision_map and 1 <= gx and gx <= #dge.collision_map[gy]
+	local adjusted_gy = #dge.collision_map - gy + 1 + dge.collision_map_offset.y
+	local adjusted_gx = gx - dge.collision_map_offset.x
+	return 1 <= adjusted_gy and adjusted_gy <= #dge.collision_map and 1 <= adjusted_gx and adjusted_gx <= #dge.collision_map[1], adjusted_gx, adjusted_gy
 end
 
 ----------------------------------------------------------------------
@@ -129,6 +132,10 @@ end
 
 function dge.set_collision_map(collision_map)
 	dge.collision_map = collision_map
+end
+
+function dge.set_collision_map_offset(offset)
+	dge.collision_map_offset = offset
 end
 
 function dge.set_tag(name, passable)
@@ -333,8 +340,9 @@ function dge.register(config)
 		if _input.up then
 			local position = member.get_position()
 			local tag = nil
-			if dge.is_within_collision_map_bounds(position.x, #dge.collision_map - position.y) then
-				tag = dge.tag[dge.collision_map[#dge.collision_map - position.y][position.x]]
+			local valid, adjusted_gx, adjusted_gy = dge.is_within_collision_map_bounds(position.x, position.y + 1)
+			if valid then
+				tag = dge.tag[dge.collision_map[adjusted_gy][adjusted_gx]]
 			end
 			local extra = dge.extra[position.x .. position.y + 1]
 			if not tag then
@@ -354,8 +362,9 @@ function dge.register(config)
 		elseif _input.left then
 			local position = member.get_position()
 			local tag = nil
-			if dge.is_within_collision_map_bounds(position.x - 1, #dge.collision_map - position.y + 1) then
-				tag = dge.tag[dge.collision_map[#dge.collision_map - position.y + 1][position.x - 1]]
+			local valid, adjusted_gx, adjusted_gy = dge.is_within_collision_map_bounds(position.x - 1, position.y)
+			if valid then
+				tag = dge.tag[dge.collision_map[adjusted_gy][adjusted_gx]]
 			end
 			local extra = dge.extra[position.x - 1 .. position.y]
 			if not tag then
@@ -375,8 +384,9 @@ function dge.register(config)
 		elseif _input.down then
 			local position = member.get_position()
 			local tag = nil
-			if dge.is_within_collision_map_bounds(position.x, #dge.collision_map - position.y + 2) then
-				tag = dge.tag[dge.collision_map[#dge.collision_map - position.y + 2][position.x]]
+			local valid, adjusted_gx, adjusted_gy = dge.is_within_collision_map_bounds(position.x, position.y - 1)
+			if valid then
+				tag = dge.tag[dge.collision_map[adjusted_gy][adjusted_gx]]
 			end
 			local extra = dge.extra[position.x .. position.y - 1]
 			if not tag then
@@ -396,8 +406,9 @@ function dge.register(config)
 		elseif _input.right then
 			local position = member.get_position()
 			local tag = nil
-			if dge.is_within_collision_map_bounds(position.x + 1, #dge.collision_map - position.y + 1) then
-				tag = dge.tag[dge.collision_map[#dge.collision_map - position.y + 1][position.x + 1]]
+			local valid, adjusted_gx, adjusted_gy = dge.is_within_collision_map_bounds(position.x + 1, position.y)
+			if valid then
+				tag = dge.tag[dge.collision_map[adjusted_gy][adjusted_gx]]
 			end
 			local extra = dge.extra[position.x + 1 .. position.y]
 			if not tag then
