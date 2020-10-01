@@ -47,7 +47,7 @@ The `dge.set_collision_map()` function assigns a collision map to the grid. Coll
 
 DGE will post a `dge.msg.collide_passable` or `dge.msg.collide_impassable` message to your character's `on_message()` function when your character collides with any grid box. If you did not specify a collision map, then `dge.msg.collide_none` will be posted instead. **Note** that if the bottom-left of your tilemap is not loaded at the origin of the game world, you should call `dge.set_collision_map_offset()` function, which allows you to shift your collision map to match up with the world position of your tilemap.
 
-You may also insert user-defined data at any grid position into the `extra` table using `dge.set_extra()`. This may be useful for adding semantics to your tiles, such as specifying warp information to a door tile. See all [extra-related functions](#dgeget_extragx-gy) for details.
+You may also insert user-defined data at any grid position into the `extra` table using `dge.set_extra()`. This may be useful for adding semantics to your tiles, such as specifying warp information to a door tile. **Note** that the `extra` table is affected by the `dge.set_collision_map_offset()` function. This is to ensure data consistency across all grid boxes. See all [extra-related functions](#dgeget_extragx-gy) for details.
 
 Configuration is now complete. Next step is to register your characters:
 
