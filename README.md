@@ -41,11 +41,11 @@ end
 ```
 
 1. `debug`: Allow debug information to be printed to the terminal.
-2. `stride`: Size of a single grid box (if you're using a tilemap, then this is likely equivalent to your tile size.)
+2. `stride`: Size of a single grid box (probably equivalent to your tile size).
 
-The `dge.set_collision_map()` function assigns a collision map to the grid. Collision maps consist of a two-dimensional array of integers, each of which corresponds to a collision tag. All tags can be found in the `dge.tag` [table](#dgetag). **Note** that a collision map is not required if you are not interested in adding collisions to your game.
+The `dge.set_collision_map()` function assigns a collision map to the grid. Collision maps consist of a two-dimensional array of integers, each of which corresponds to a collision tag. All tags can be found in the `dge.tag` [table](#dgetag). Custom tags may be inserted into the `dge.tag` table if you wish to detect additional collision cases. See all [tag-related functions](#dgeget_tagname) for details. **Note** that a collision map is not required if you are not interested in adding collisions to your game.
 
-DGE will post a `dge.msg.collide_passable` or `dge.msg.collide_impassable` message to your character's `on_message()` function when your character collides with any grid box. If you did not specify a collision map, then `dge.msg.collide_none` will be posted instead. Custom tags may be inserted into the `dge.tag` table if you wish to detect additional collision cases. See all [tag-related functions](#dgeget_tagname) for details.
+DGE will post a `dge.msg.collide_passable` or `dge.msg.collide_impassable` message to your character's `on_message()` function when your character collides with any grid box. If you did not specify a collision map, then `dge.msg.collide_none` will be posted instead. **Note** that if the bottom-left of your tilemap is not loaded at the origin of the game world, you should call `dge.set_collision_map_offset()` function, which allows you to shift your collision map to match up with the world position of your tilemap.
 
 You may also insert user-defined data at any grid position into the `extra` table using `dge.set_extra()`. This may be useful for adding semantics to your tiles, such as specifying warp information to a door tile. See all [extra-related functions](#dgeget_extragx-gy) for details.
 
@@ -202,6 +202,16 @@ Sets the collision map.
 
 ---
 
+### dge.set_collision_map_offset(gx, gy)
+
+Sets the collision map offset. If the bottom-left of your tilemap is not loaded at the origin of the game world, then this function will allow you to shift your collision map to match up with the world position of your tilemap.
+
+#### Parameters
+1. `gx`: Number of grid boxes to shift horizontally.
+2. `gy`: Number of grid boxes to shift vertically.
+
+---
+
 ### dge.get_tag(name)
 
 Gets tag information.
@@ -313,7 +323,12 @@ Checks if the grid coordinates <gx, gy> lie inside the collision map bounds.
 
 #### Returns
 
-Returns a `bool`.
+Returns three values:
+1. `bool` result.
+2. Number denoting the x-index in the collision map array of `gx`. This number may be equivalent to `gx`, however it will be different if your collision map has been shifted using the `dge.set_collision_map_offset()` function.
+3. Number denoting the y-index in the collision map array of `gy`. This number may be equivalent to the inverse of `gy`, however it will be different if your collision map has been shifted using the `dge.set_collision_map_offset()` function.
+
+The numerical return values are unlikely to be useful, however they still exist due to being used internally.
 
 ---
 
