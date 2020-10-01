@@ -96,7 +96,7 @@ function dge.get_tag(name)
 end
 
 function dge.get_extra(gx, gy)
-	return dge.extra[gx .. gy]
+	return dge.extra[(gx + dge.collision_map_offset.x) .. (gy + dge.collision_map_offset.y)]
 end
 
 function dge.to_pixel_coordinates(grid_coordinates)
@@ -154,7 +154,7 @@ function dge.add_tag(name, passable)
 end
 
 function dge.set_extra(extra, gx, gy)
-	dge.extra[gx .. gy] = extra
+	dge.extra[(gx + dge.collision_map_offset.x) .. (gy + dge.collision_map_offset.y)] = extra
 end
 
 function dge.clear_extra()
