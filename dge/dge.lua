@@ -344,7 +344,7 @@ function dge.register(config)
 			if valid then
 				tag = dge.tag[dge.collision_map[adjusted_gy][adjusted_gx]]
 			end
-			local extra = dge.extra[position.x .. position.y + 1]
+			local extra = dge.extra[adjusted_gx .. adjusted_gy]
 			if not tag then
 				msg.post("#", dge.msg.collide_none, { extra = extra })
 				_moving = true
@@ -366,7 +366,7 @@ function dge.register(config)
 			if valid then
 				tag = dge.tag[dge.collision_map[adjusted_gy][adjusted_gx]]
 			end
-			local extra = dge.extra[position.x - 1 .. position.y]
+			local extra = dge.extra[adjusted_gx .. adjusted_gy]
 			if not tag then
 				msg.post("#", dge.msg.collide_none, { extra = extra })
 				_moving = true
@@ -388,7 +388,7 @@ function dge.register(config)
 			if valid then
 				tag = dge.tag[dge.collision_map[adjusted_gy][adjusted_gx]]
 			end
-			local extra = dge.extra[position.x .. position.y - 1]
+			local extra = dge.extra[adjusted_gx .. adjusted_gy]
 			if not tag then
 				msg.post("#", dge.msg.collide_none, { extra = extra })
 				_moving = true
@@ -410,7 +410,7 @@ function dge.register(config)
 			if valid then
 				tag = dge.tag[dge.collision_map[adjusted_gy][adjusted_gx]]
 			end
-			local extra = dge.extra[position.x + 1 .. position.y]
+			local extra = dge.extra[adjusted_gx .. adjusted_gy]
 			if not tag then
 				msg.post("#", dge.msg.collide_none, { extra = extra })
 				_moving = true
