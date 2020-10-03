@@ -37,11 +37,9 @@ local dge = {}
 ----------------------------------------------------------------------
 
 dge.member = {}
-dge.debug = false
 dge.stride = 0
 dge.collision_map = {}
 dge.collision_map_offset = vmath.vector3()
-dge.extra = {}
 
 dge.tag = {
 	{ name = hash("passable"), passable = true },
@@ -79,12 +77,16 @@ dge.msg = {
 -- CONSTANT FUNCTIONS
 ----------------------------------------------------------------------
 
-function dge.is_debug_enabled()
-	return dge.debug
+function dge.get_stride()
+	return dge.stride
 end
 
 function dge.get_collision_map()
 	return dge.collision_map
+end
+
+function dge.get_collision_map_offset()
+	return dge.collision_map_offset
 end
 
 function dge.get_tag(name)
@@ -95,39 +97,29 @@ function dge.get_tag(name)
 	end
 end
 
-function dge.get_extra(gx, gy)
-	return dge.extra[(gx + dge.collision_map_offset.x) .. (gy + dge.collision_map_offset.y)]
-end
-
-function dge.to_pixel_coordinates(grid_coordinates)
+function dge.to_pixel_position(grid_position)
 	local half_stride = dge.stride * 0.5
-	return vmath.vector3(grid_coordinates.x * dge.stride - half_stride, grid_coordinates.y * dge.stride - half_stride, grid_coordinates.z)
+	return vmath.vector3(grid_position.x * dge.stride - half_stride, grid_position.y * dge.stride - half_stride, grid_position.z)
 end
 
-function dge.to_grid_coordinates(pixel_coordinates)
-	return vmath.vector3(math.floor(pixel_coordinates.x / dge.stride) + 1, math.floor(pixel_coordinates.y / dge.stride) + 1, pixel_coordinates.z)
+function dge.to_grid_position(pixel_position)
+	return vmath.vector3(math.floor(pixel_position.x / dge.stride) + 1, math.floor(pixel_position.y / dge.stride) + 1, pixel_position.z)
 end
 
-function dge.is_within_collision_map_bounds(gx, gy)
-	local adjusted_gy = #dge.collision_map - gy + 1 + dge.collision_map_offset.y
-	local adjusted_gx = gx - dge.collision_map_offset.x
-	return 1 <= adjusted_gy and adjusted_gy <= #dge.collision_map and 1 <= adjusted_gx and adjusted_gx <= #dge.collision_map[1], adjusted_gx, adjusted_gy
+function dge.to_collision_map_position(grid_position)
+	local result = vmath.vector3(grid_position.x - dge.collision_map_offset.x, #dge.collision_map - grid_position.y + 1 + dge.collision_map_offset.y, 0)
+	if 1 <= result.y and result.y <= #dge.collision_map and 1 <= result.x and result.x <= #dge.collision_map[1] then
+		return result
+	end
+	return nil
 end
 
 ----------------------------------------------------------------------
 -- VOLATILE FUNCTIONS
 ----------------------------------------------------------------------
 
-function dge.init(config)
-	dge.debug = config.debug
-	dge.stride = config.stride
-	if config.debug then
-		print("DGE: Initialized.")
-	end
-end
-
-function dge.set_debug(flag)
-	dge.debug = flag
+function dge.set_stride(stride)
+	dge.stride = stride
 end
 
 function dge.set_collision_map(collision_map)
@@ -153,14 +145,6 @@ function dge.add_tag(name, passable)
 	end
 end
 
-function dge.set_extra(extra, gx, gy)
-	dge.extra[(gx + dge.collision_map_offset.x) .. (gy + dge.collision_map_offset.y)] = extra
-end
-
-function dge.clear_extra()
-	dge.extra = {}
-end
-
 function dge.register(config)
 
 	dge.member[go.get_id()] = true
@@ -184,22 +168,8 @@ function dge.register(config)
 	-- INSTANCE CONSTANT FUNCTIONS
 	----------------------------------------------------------------------
 
-	local function input_to_direction(input)
-		local result = 0
-		if input.up then
-			result = bit.bor(result, dge.direction.up.value)
-		elseif input.left then
-			result = bit.bor(result, dge.direction.left.value)
-		elseif input.down then
-			result = bit.bor(result, dge.direction.down.value)
-		elseif input.right then
-			result = bit.bor(result, dge.direction.right.value)
-		end
-		for key, value in pairs(dge.direction) do
-			if value.value == result then
-				return value
-			end
-		end
+	function member.get_size()
+		return _size
 	end
 
 	function member.get_direction()
@@ -214,12 +184,20 @@ function dge.register(config)
 		return _moving
 	end
 
-	function member.get_position()
-		return dge.to_grid_coordinates(go.get_position() + _offset)
+	function member.get_movement_gate()
+		return _movement_gate
+	end
+
+	function member.get_grid_position()
+		return dge.to_grid_position(go.get_position() + _offset)
+	end
+
+	function member.get_collision_map_position()
+		return dge.to_collision_map_position(member.get_grid_position())
 	end
 
 	function member.reach()
-		return member.get_position() + neighbor[_direction.value]
+		return member.get_grid_position() + neighbor[_direction.value]
 	end
 
 	----------------------------------------------------------------------
@@ -227,10 +205,7 @@ function dge.register(config)
 	----------------------------------------------------------------------
 
 	local function snap()
-		go.set_position(dge.to_pixel_coordinates(dge.to_grid_coordinates(go.get_position() + _offset)) - _offset)
-		if dge.debug then
-			print("DGE: Snapped to position. " .. go.get_id() .. " " .. go.get_position())
-		end
+		go.set_position(dge.to_pixel_position(dge.to_grid_position(go.get_position() + _offset)) - _offset)
 	end
 
 	local function lerp(dt)
@@ -283,9 +258,9 @@ function dge.register(config)
 		end
 	end
 
-	function member.set_position(grid_coordinates)
+	function member.set_grid_position(grid_position)
 		if not _moving then
-			go.set_position(dge.to_pixel_coordinates(grid_coordinates) - _offset)
+			go.set_position(dge.to_pixel_position(grid_position) - _offset)
 		end
 	end
 
@@ -338,96 +313,47 @@ function dge.register(config)
 			end
 		end
 		if _input.up then
-			local position = member.get_position()
-			local tag = nil
-			local valid, adjusted_gx, adjusted_gy = dge.is_within_collision_map_bounds(position.x, position.y + 1)
-			if valid then
-				tag = dge.tag[dge.collision_map[adjusted_gy][adjusted_gx]]
-			end
-			local extra = dge.extra[adjusted_gx .. adjusted_gy]
-			if not tag then
-				msg.post("#", dge.msg.collide_none, { extra = extra })
+			_direction = dge.direction.up
+			local collision_map_position = dge.to_collision_map_position(member.reach())
+			local tag = collision_map_position and dge.tag[dge.collision_map[collision_map_position.y][collision_map_position.x]] or nil
+			msg.post("#", tag and (tag.passable and dge.msg.collide_passable or dge.msg.collide_impassable) or dge.msg.collide_none, { name = tag and tag.name or nil })
+			if not tag or tag.passable then
 				_moving = true
 				_lerp.v1 = go.get_position()
 				_lerp.v2 = _lerp.v1 + vmath.vector3(0, dge.stride, 0)
-			elseif tag.passable then
-				msg.post("#", dge.msg.collide_passable, { name = tag.name, extra = extra })
-				_moving = true
-				_lerp.v1 = go.get_position()
-				_lerp.v2 = _lerp.v1 + vmath.vector3(0, dge.stride, 0)
-			else
-				msg.post("#", dge.msg.collide_impassable, { name = tag.name, extra = extra })
-				_direction = dge.direction.up
 			end
 		elseif _input.left then
-			local position = member.get_position()
-			local tag = nil
-			local valid, adjusted_gx, adjusted_gy = dge.is_within_collision_map_bounds(position.x - 1, position.y)
-			if valid then
-				tag = dge.tag[dge.collision_map[adjusted_gy][adjusted_gx]]
-			end
-			local extra = dge.extra[adjusted_gx .. adjusted_gy]
-			if not tag then
-				msg.post("#", dge.msg.collide_none, { extra = extra })
+			_direction = dge.direction.left
+			local collision_map_position = dge.to_collision_map_position(member.reach())
+			local tag = collision_map_position and dge.tag[dge.collision_map[collision_map_position.y][collision_map_position.x]] or nil
+			msg.post("#", tag and (tag.passable and dge.msg.collide_passable or dge.msg.collide_impassable) or dge.msg.collide_none, { name = tag and tag.name or nil })
+			if not tag or tag.passable then
 				_moving = true
 				_lerp.v1 = go.get_position()
 				_lerp.v2 = _lerp.v1 + vmath.vector3(-dge.stride, 0, 0)
-			elseif tag.passable then
-				msg.post("#", dge.msg.collide_passable, { name = tag.name, extra = extra })
-				_moving = true
-				_lerp.v1 = go.get_position()
-				_lerp.v2 = _lerp.v1 + vmath.vector3(-dge.stride, 0, 0)
-			else
-				msg.post("#", dge.msg.collide_impassable, { name = tag.name, extra = extra })
-				_direction = dge.direction.left
 			end
 		elseif _input.down then
-			local position = member.get_position()
-			local tag = nil
-			local valid, adjusted_gx, adjusted_gy = dge.is_within_collision_map_bounds(position.x, position.y - 1)
-			if valid then
-				tag = dge.tag[dge.collision_map[adjusted_gy][adjusted_gx]]
-			end
-			local extra = dge.extra[adjusted_gx .. adjusted_gy]
-			if not tag then
-				msg.post("#", dge.msg.collide_none, { extra = extra })
+			_direction = dge.direction.down
+			local collision_map_position = dge.to_collision_map_position(member.reach())
+			local tag = collision_map_position and dge.tag[dge.collision_map[collision_map_position.y][collision_map_position.x]] or nil
+			msg.post("#", tag and (tag.passable and dge.msg.collide_passable or dge.msg.collide_impassable) or dge.msg.collide_none, { name = tag and tag.name or nil })
+			if not tag or tag.passable then
 				_moving = true
 				_lerp.v1 = go.get_position()
 				_lerp.v2 = _lerp.v1 + vmath.vector3(0, -dge.stride, 0)
-			elseif tag.passable then
-				msg.post("#", dge.msg.collide_passable, { name = tag.name, extra = extra })
-				_moving = true
-				_lerp.v1 = go.get_position()
-				_lerp.v2 = _lerp.v1 + vmath.vector3(0, -dge.stride, 0)
-			else
-				msg.post("#", dge.msg.collide_impassable, { name = tag.name, extra = extra })
-				_direction = dge.direction.down
 			end
 		elseif _input.right then
-			local position = member.get_position()
-			local tag = nil
-			local valid, adjusted_gx, adjusted_gy = dge.is_within_collision_map_bounds(position.x + 1, position.y)
-			if valid then
-				tag = dge.tag[dge.collision_map[adjusted_gy][adjusted_gx]]
-			end
-			local extra = dge.extra[adjusted_gx .. adjusted_gy]
-			if not tag then
-				msg.post("#", dge.msg.collide_none, { extra = extra })
+			_direction = dge.direction.right
+			local collision_map_position = dge.to_collision_map_position(member.reach())
+			local tag = collision_map_position and dge.tag[dge.collision_map[collision_map_position.y][collision_map_position.x]] or nil
+			msg.post("#", tag and (tag.passable and dge.msg.collide_passable or dge.msg.collide_impassable) or dge.msg.collide_none, { name = tag and tag.name or nil })
+			if not tag or tag.passable then
 				_moving = true
 				_lerp.v1 = go.get_position()
 				_lerp.v2 = _lerp.v1 + vmath.vector3(dge.stride, 0, 0)
-			elseif tag.passable then
-				msg.post("#", dge.msg.collide_passable, { name = tag.name, extra = extra })
-				_moving = true
-				_lerp.v1 = go.get_position()
-				_lerp.v2 = _lerp.v1 + vmath.vector3(dge.stride, 0, 0)
-			else
-				msg.post("#", dge.msg.collide_impassable, { name = tag.name, extra = extra })
-				_direction = dge.direction.right
 			end
 		end
 		if _moving then
-			_direction = input_to_direction(_input)
 			if not complete then
 				msg.post("#", dge.msg.move_start)
 				lerp(dt)
@@ -441,13 +367,6 @@ function dge.register(config)
 
 	function member.unregister()
 		dge.member[go.get_id()] = nil
-		if dge.debug then
-			print("DGE: Game object unregistered. " .. go.get_id())
-		end
-	end
-
-	if dge.debug then
-		print("DGE: Game object registered. " .. go.get_id())
 	end
 
 	snap()

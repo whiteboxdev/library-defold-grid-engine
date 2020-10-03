@@ -1,13 +1,10 @@
 local dge = require "dge.dge"
 local rendercam = require "rendercam.rendercam"
 
+local stride = 80
+
 local walk_speed = 3
 local dash_speed = 6
-
-local dge_config = {
-	debug = true,
-	stride = 80
-}
 
 local member_config = {
 	size = vmath.vector3(80, 80, 0),
@@ -27,20 +24,18 @@ local h_str = {
 	display = hash("display"),
 	clear = hash("clear"),
 	custom_tag_1 = hash("custom_tag_1"),
-	custom_tag_2 = hash("custom_tag_2")
+	custom_tag_2 = hash("custom_tag_2"),
+	object = hash("object"),
+	terrain = hash("terrain")
 }
 
 function init(self)
 	msg.post("#", h_str.acquire_input_focus)
 	rendercam.follow_lerp_speed = 8
 	rendercam.follow("/player")
-	dge.init(dge_config)
+	dge.set_stride(stride)
 	local key_1 = dge.add_tag(h_str.custom_tag_1, true)
 	local key_2 = dge.add_tag(h_str.custom_tag_2, false)
-	if dge.is_debug_enabled() then
-		print("Tag added. " .. h_str.custom_tag_1 .. " key = " .. key_1)
-		print("Tag added. " .. h_str.custom_tag_2 .. " key = " .. key_2)
-	end
 	dge.set_collision_map({
 		{ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 },
 		{ 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2 },
@@ -85,14 +80,12 @@ function on_input(self, action_id, action)
 			msg.post("/map#gui", h_str.clear)
 		elseif action_id == h_str.reach and not self.dge.is_moving() then
 			local tile_position = self.dge.reach()
-			if dge.is_within_collision_map_bounds(tile_position.x, tile_position.y) then
-				local tile_id_object = tilemap.get_tile("/map#tilemap", "object", tile_position.x, tile_position.y)
-				local tile_id_terrain = tilemap.get_tile("/map#tilemap", "terrain", tile_position.x, tile_position.y)
-				if tile_id_object ~= 0 then
-					msg.post("/map#gui", h_str.display, { id = tile_id_object })
-				elseif tile_id_terrain ~= 0 then
-					msg.post("/map#gui", h_str.display, { id = tile_id_terrain })
-				end
+			local tile_id_object = tilemap.get_tile("/map#tilemap", h_str.object, tile_position.x, tile_position.y)
+			local tile_id_terrain = tilemap.get_tile("/map#tilemap", h_str.terrain, tile_position.x, tile_position.y)
+			if tile_id_object ~= 0 then
+				msg.post("/map#gui", h_str.display, { id = tile_id_object })
+			elseif tile_id_terrain ~= 0 then
+				msg.post("/map#gui", h_str.display, { id = tile_id_terrain })
 			end
 		elseif action_id == h_str.fast then
 			self.dge.set_speed(dash_speed)
@@ -113,19 +106,17 @@ function on_input(self, action_id, action)
 end
 
 function on_message(self, message_id, message, sender)
-	if dge.is_debug_enabled() then
-		if message_id == dge.msg.move_start then
-			print("Caught dge.msg.move_start.")
-		elseif message_id == dge.msg.move_end then
-			print("Caught dge.msg.move_end.")
-		elseif message_id == dge.msg.move_repeat then
-			print("Caught dge.msg.move_repeat.")
-		elseif message_id == dge.msg.collide_none then
-			print("Caught dge.msg.collide_none")
-		elseif message_id == dge.msg.collide_passable then
-			print("Caught dge.msg.collide_passable. " .. message.name)
-		elseif message_id == dge.msg.collide_impassable then
-			print("Caught dge.msg.collide_impassable. " .. message.name)
-		end
+	if message_id == dge.msg.move_start then
+		print("Caught dge.msg.move_start.")
+	elseif message_id == dge.msg.move_end then
+		print("Caught dge.msg.move_end.")
+	elseif message_id == dge.msg.move_repeat then
+		print("Caught dge.msg.move_repeat.")
+	elseif message_id == dge.msg.collide_none then
+		print("Caught dge.msg.collide_none")
+	elseif message_id == dge.msg.collide_passable then
+		print("Caught dge.msg.collide_passable. " .. message.name)
+	elseif message_id == dge.msg.collide_impassable then
+		print("Caught dge.msg.collide_impassable. " .. message.name)
 	end
 end
