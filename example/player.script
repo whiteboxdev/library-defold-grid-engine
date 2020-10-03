@@ -2,12 +2,11 @@ local dge = require "dge.dge"
 local rendercam = require "rendercam.rendercam"
 
 local stride = 80
-
 local walk_speed = 3
 local dash_speed = 6
 
 local member_config = {
-	size = vmath.vector3(80, 80, 0),
+	size = vmath.vector3(stride, stride, 0),
 	direction = dge.direction.down,
 	speed = walk_speed
 }
@@ -33,9 +32,9 @@ function init(self)
 	msg.post("#", h_str.acquire_input_focus)
 	rendercam.follow_lerp_speed = 8
 	rendercam.follow("/player")
+	dge.add_tag(h_str.custom_tag_1, true)
+	dge.add_tag(h_str.custom_tag_2, false)
 	dge.set_stride(stride)
-	local key_1 = dge.add_tag(h_str.custom_tag_1, true)
-	local key_2 = dge.add_tag(h_str.custom_tag_2, false)
 	dge.set_collision_map({
 		{ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 },
 		{ 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2 },
@@ -52,6 +51,9 @@ function init(self)
 		{ 2, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 2 },
 		{ 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2 },
 		{ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 }
+	})
+	dge.set_property_map({
+		["73"] = { gold = 9001 }
 	})
 	self.dge = dge.register(member_config)
 end
@@ -115,8 +117,8 @@ function on_message(self, message_id, message, sender)
 	elseif message_id == dge.msg.collide_none then
 		print("Caught dge.msg.collide_none")
 	elseif message_id == dge.msg.collide_passable then
-		print("Caught dge.msg.collide_passable. " .. message.name)
+		print("Caught dge.msg.collide_passable. Tag name:", message.name, "Property:", message.property and message.property.gold or nil)
 	elseif message_id == dge.msg.collide_impassable then
-		print("Caught dge.msg.collide_impassable. " .. message.name)
+		print("Caught dge.msg.collide_passable. Tag name:", message.name, "Property:", message.property and message.property.gold or nil)
 	end
 end
