@@ -325,7 +325,7 @@ function dge.register(config)
 			_direction = dge.direction.up
 			local map_position = dge.to_map_position(member.reach())
 			local tag = map_position and dge.tag[dge.collision_map[map_position.y][map_position.x]] or nil
-			msg.post("#", tag and (tag.passable and dge.msg.collide_passable or dge.msg.collide_impassable) or dge.msg.collide_none, { name = tag and tag.name or nil, property = dge.property_map[map_position.x .. map_position.y] })
+			msg.post("#", tag and (tag.passable and dge.msg.collide_passable or dge.msg.collide_impassable) or dge.msg.collide_none, tag and { name = tag.name, property = dge.property_map[map_position.x .. map_position.y] } or nil)
 			if not tag or tag.passable then
 				_moving = true
 				_lerp.v1 = go.get_position()
@@ -335,7 +335,7 @@ function dge.register(config)
 			_direction = dge.direction.left
 			local map_position = dge.to_map_position(member.reach())
 			local tag = map_position and dge.tag[dge.collision_map[map_position.y][map_position.x]] or nil
-			msg.post("#", tag and (tag.passable and dge.msg.collide_passable or dge.msg.collide_impassable) or dge.msg.collide_none, { name = tag and tag.name or nil, property = dge.property_map[map_position.x .. map_position.y] })
+			msg.post("#", tag and (tag.passable and dge.msg.collide_passable or dge.msg.collide_impassable) or dge.msg.collide_none, tag and { name = tag.name, property = dge.property_map[map_position.x .. map_position.y] } or nil)
 			if not tag or tag.passable then
 				_moving = true
 				_lerp.v1 = go.get_position()
@@ -345,7 +345,7 @@ function dge.register(config)
 			_direction = dge.direction.down
 			local map_position = dge.to_map_position(member.reach())
 			local tag = map_position and dge.tag[dge.collision_map[map_position.y][map_position.x]] or nil
-			msg.post("#", tag and (tag.passable and dge.msg.collide_passable or dge.msg.collide_impassable) or dge.msg.collide_none, { name = tag and tag.name or nil, property = dge.property_map[map_position.x .. map_position.y] })
+			msg.post("#", tag and (tag.passable and dge.msg.collide_passable or dge.msg.collide_impassable) or dge.msg.collide_none, tag and { name = tag.name, property = dge.property_map[map_position.x .. map_position.y] } or nil)
 			if not tag or tag.passable then
 				_moving = true
 				_lerp.v1 = go.get_position()
@@ -355,7 +355,7 @@ function dge.register(config)
 			_direction = dge.direction.right
 			local map_position = dge.to_map_position(member.reach())
 			local tag = map_position and dge.tag[dge.collision_map[map_position.y][map_position.x]] or nil
-			msg.post("#", tag and (tag.passable and dge.msg.collide_passable or dge.msg.collide_impassable) or dge.msg.collide_none, { name = tag and tag.name or nil, property = dge.property_map[map_position.x .. map_position.y] })
+			msg.post("#", tag and (tag.passable and dge.msg.collide_passable or dge.msg.collide_impassable) or dge.msg.collide_none, tag and { name = tag.name, property = dge.property_map[map_position.x .. map_position.y] } or nil)
 			if not tag or tag.passable then
 				_moving = true
 				_lerp.v1 = go.get_position()
