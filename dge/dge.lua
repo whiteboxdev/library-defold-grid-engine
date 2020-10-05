@@ -169,7 +169,7 @@ function dge.register(config)
 	local _offset = vmath.vector3(0, dge.stride * 0.5 - _size.y * 0.5, 0)
 	local _input = { up = false, left = false, down = false, right = false }
 	local _moving = false
-	local _movement_gate = true
+	local _force = false
 	local _lerp = { t = 0, v1 = vmath.vector3(), v2 = vmath.vector3() }
 	local _lerp_callback = {}
 
@@ -193,8 +193,8 @@ function dge.register(config)
 		return _moving
 	end
 
-	function member.get_movement_gate()
-		return _movement_gate
+	function member.is_forcing_movement()
+		return _force
 	end
 
 	function member.get_grid_position()
@@ -250,9 +250,8 @@ function dge.register(config)
 		_speed = speed
 	end
 
-	function member.set_movement_gate(flag)
-		_movement_gate = gate
-		_input = { up = false, left = false, down = false, right = false }
+	function member.force_movement(flag)
+		_force = flag
 	end
 
 	function member.add_lerp_callback(callback, volatile)
@@ -274,27 +273,19 @@ function dge.register(config)
 	end
 
 	function member.move_up()
-		if _movement_gate then
-			_input.up = true
-		end
+		_input.up = true
 	end
 
 	function member.move_left()
-		if _movement_gate then
-			_input.left = true
-		end
+		_input.left = true
 	end
 
 	function member.move_down()
-		if _movement_gate then
-			_input.down = true
-		end
+		_input.down = true
 	end
 
 	function member.move_right()
-		if _movement_gate then
-			_input.right = true
-		end
+		_input.right = true
 	end
 
 	function member.stop_up()
@@ -326,7 +317,7 @@ function dge.register(config)
 			local map_position = dge.to_map_position(member.reach())
 			local tag = map_position and dge.tag[dge.collision_map[map_position.y][map_position.x]] or nil
 			msg.post("#", tag and (tag.passable and dge.msg.collide_passable or dge.msg.collide_impassable) or dge.msg.collide_none, tag and { name = tag.name, property = dge.property_map[map_position.x .. map_position.y] } or nil)
-			if not tag or tag.passable then
+			if not tag or tag.passable or _force then
 				_moving = true
 				_lerp.v1 = go.get_position()
 				_lerp.v2 = _lerp.v1 + vmath.vector3(0, dge.stride, 0)
@@ -336,7 +327,7 @@ function dge.register(config)
 			local map_position = dge.to_map_position(member.reach())
 			local tag = map_position and dge.tag[dge.collision_map[map_position.y][map_position.x]] or nil
 			msg.post("#", tag and (tag.passable and dge.msg.collide_passable or dge.msg.collide_impassable) or dge.msg.collide_none, tag and { name = tag.name, property = dge.property_map[map_position.x .. map_position.y] } or nil)
-			if not tag or tag.passable then
+			if not tag or tag.passable or _force then
 				_moving = true
 				_lerp.v1 = go.get_position()
 				_lerp.v2 = _lerp.v1 + vmath.vector3(-dge.stride, 0, 0)
@@ -346,7 +337,7 @@ function dge.register(config)
 			local map_position = dge.to_map_position(member.reach())
 			local tag = map_position and dge.tag[dge.collision_map[map_position.y][map_position.x]] or nil
 			msg.post("#", tag and (tag.passable and dge.msg.collide_passable or dge.msg.collide_impassable) or dge.msg.collide_none, tag and { name = tag.name, property = dge.property_map[map_position.x .. map_position.y] } or nil)
-			if not tag or tag.passable then
+			if not tag or tag.passable or _force then
 				_moving = true
 				_lerp.v1 = go.get_position()
 				_lerp.v2 = _lerp.v1 + vmath.vector3(0, -dge.stride, 0)
@@ -356,7 +347,7 @@ function dge.register(config)
 			local map_position = dge.to_map_position(member.reach())
 			local tag = map_position and dge.tag[dge.collision_map[map_position.y][map_position.x]] or nil
 			msg.post("#", tag and (tag.passable and dge.msg.collide_passable or dge.msg.collide_impassable) or dge.msg.collide_none, tag and { name = tag.name, property = dge.property_map[map_position.x .. map_position.y] } or nil)
-			if not tag or tag.passable then
+			if not tag or tag.passable or _force then
 				_moving = true
 				_lerp.v1 = go.get_position()
 				_lerp.v2 = _lerp.v1 + vmath.vector3(dge.stride, 0, 0)
