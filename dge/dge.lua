@@ -293,6 +293,8 @@ function dge.register(config)
 			_input.down = false
 		elseif direction == dge.direction.right then
 			_input.right = false
+		elseif not direction then
+			_input = { up = false, left = false, down = false, right = false }
 		end
 	end
 
