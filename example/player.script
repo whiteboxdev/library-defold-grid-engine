@@ -69,16 +69,16 @@ end
 function on_input(self, action_id, action)
 	if action.pressed then
 		if action_id == h_str.up then
-			self.dge.move_up()
+			self.dge.move(dge.direction.up)
 			msg.post("/map#gui", h_str.clear)
 		elseif action_id == h_str.left then
-			self.dge.move_left()
+			self.dge.move(dge.direction.left)
 			msg.post("/map#gui", h_str.clear)
 		elseif action_id == h_str.down then
-			self.dge.move_down()
+			self.dge.move(dge.direction.down)
 			msg.post("/map#gui", h_str.clear)
 		elseif action_id == h_str.right then
-			self.dge.move_right()
+			self.dge.move(dge.direction.right)
 			msg.post("/map#gui", h_str.clear)
 		elseif action_id == h_str.reach and not self.dge.is_moving() then
 			local tile_position = self.dge.reach()
@@ -94,13 +94,13 @@ function on_input(self, action_id, action)
 		end
 	elseif action.released then
 		if action_id == h_str.up then
-			self.dge.stop_up()
+			self.dge.stop(dge.direction.up)
 		elseif action_id == h_str.left then
-			self.dge.stop_left()
+			self.dge.stop(dge.direction.left)
 		elseif action_id == h_str.down then
-			self.dge.stop_down()
+			self.dge.stop(dge.direction.down)
 		elseif action_id == h_str.right then
-			self.dge.stop_right()
+			self.dge.stop(dge.direction.right)
 		elseif action_id == h_str.fast then
 			self.dge.set_speed(walk_speed)
 		end

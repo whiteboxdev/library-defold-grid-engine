@@ -272,36 +272,28 @@ function dge.register(config)
 		end
 	end
 
-	function member.move_up()
-		_input.up = true
+	function member.move(direction)
+		if direction == dge.direction.up then
+			_input.up = true
+		elseif direction == dge.direction.left then
+			_input.left = true
+		elseif direction == dge.direction.down then
+			_input.down = true
+		elseif direction == dge.direction.right then
+			_input.right = true
+		end
 	end
 
-	function member.move_left()
-		_input.left = true
-	end
-
-	function member.move_down()
-		_input.down = true
-	end
-
-	function member.move_right()
-		_input.right = true
-	end
-
-	function member.stop_up()
-		_input.up = false
-	end
-
-	function member.stop_left()
-		_input.left = false
-	end
-
-	function member.stop_down()
-		_input.down = false
-	end
-
-	function member.stop_right()
-		_input.right = false
+	function member.stop(direction)
+		if direction == dge.direction.up then
+			_input.up = false
+		elseif direction == dge.direction.left then
+			_input.left = false
+		elseif direction == dge.direction.down then
+			_input.down = false
+		elseif direction == dge.direction.right then
+			_input.right = false
+		end
 	end
 
 	function member.update(dt)
