@@ -492,7 +492,7 @@ Begin moving in some direction. Movement will continue until `self.dge.stop()` i
 Stop moving in some direction.
 
 #### Parameters
-1. `direction`: Entry in the `dge.direction` [table](#dgedirection).
+1. `direction`: Entry in the `dge.direction` [table](#dgedirection). Omit this argument if you wish to stop movement in all directions instead of just one.
 
 ---
 
