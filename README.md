@@ -1,5 +1,5 @@
 # Defold Grid Engine
-Defold Grid Engine (DGE) 0.4.0 provides grid-based movement, interactions, and utility features to a Defold game engine project. Two examples of video game franchises that use grid-based systems are Pokémon and Fire Emblem.
+Defold Grid Engine (DGE) 0.4.1 provides grid-based movement, interactions, and utility features to a Defold game engine project. Two examples of video game franchises that use grid-based systems are Pokémon and Fire Emblem.
 
 An [example project](https://github.com/kowalskigamedevelopment/defold-grid-engine/tree/master/example) is available if you need additional help with configuration.  
 Visit [my website](https://kowalskigamedevelopment.github.io/html/extensions.html#dge) to see an animated gif of the example project.
@@ -307,7 +307,7 @@ Sets the collision and property map offset. If the bottom-left of your tilemap i
 Sets an existing tag's `passable` flag.
 
 #### Parameters
-1. `name`: Hash of a string representation of a tag.
+1. `name`: Hashed name of tag.
 2. `passable`: `bool` indicating whether characters may pass through grid boxes assigned to this tag.
 
 ---
@@ -317,12 +317,12 @@ Sets an existing tag's `passable` flag.
 Adds a tag to the `dge.tag` table.
 
 #### Parameters
-1. `name`: Hash of a string representation of a tag.
+1. `name`: Hashed name of tag.
 2. `passable`: `bool` indicating whether characters may pass through grid boxes assigned to this tag.
 
 #### Returns
 
-Returns the key integer of the added tag. This key may be used in a collision map passed to `dge.set_collision_map()`.
+Returns the tag's integer value which may be used when constructing your collision map.
 
 ---
 
@@ -466,16 +466,6 @@ Removes a lerp callback, which triggers upon each complete character movement. D
 #### Parameters
 1. `callback`: Callback function.
 2. `volatile`: `bool` indicating whether to remove this callback after being triggered once.
-
----
-
-### self.dge.get_position()
-
-Gets the position of this character in grid coordinates.
-
-#### Returns
-
-Returns a `vector3`.
 
 ---
 
