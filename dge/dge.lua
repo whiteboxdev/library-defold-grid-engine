@@ -27,14 +27,10 @@
 -- https://github.com/kowalskigamedevelopment/defold-grid-engine
 
 ----------------------------------------------------------------------
--- DEPENDENCIES
+-- MODULE PROPERTIES
 ----------------------------------------------------------------------
 
 local dge = {}
-
-----------------------------------------------------------------------
--- PROPERTIES
-----------------------------------------------------------------------
 
 dge.member = {}
 dge.stride = 0
@@ -47,22 +43,11 @@ dge.tag = {
 	{ name = hash("impassable"), passable = false }
 }
 
-----------------------------------------------------------------------
--- CONSTANT VALUES
-----------------------------------------------------------------------
-
-local neighbor = {
-	[1] = vmath.vector3(0, 1, 0),
-	[2] = vmath.vector3(-1, 0, 0),
-	[4] = vmath.vector3(0, -1, 0),
-	[8] = vmath.vector3(1, 0, 0)
-}
-
 dge.direction = {
-	up = { value = 1, string = "up" },
-	left = { value = 2, string = "left" },
-	down = { value = 4, string = "down" },
-	right = { value = 8, string = "right" }
+	up = { value = 1, string = "up", offset = vmath.vector3(0, 1, 0) },
+	left = { value = 2, string = "left", offset = vmath.vector3(-1, 0, 0) },
+	down = { value = 3, string = "down", offset = vmath.vector3(0, -1, 0) },
+	right = { value = 4, string = "right", offset = vmath.vector3(1, 0, 0) }
 }
 
 dge.msg = {
@@ -75,7 +60,7 @@ dge.msg = {
 }
 
 ----------------------------------------------------------------------
--- CONSTANT FUNCTIONS
+-- MODULE FUNCTIONS
 ----------------------------------------------------------------------
 
 function dge.get_stride()
@@ -119,10 +104,6 @@ function dge.to_map_position(grid_position)
 	return nil
 end
 
-----------------------------------------------------------------------
--- VOLATILE FUNCTIONS
-----------------------------------------------------------------------
-
 function dge.set_stride(stride)
 	dge.stride = stride
 end
@@ -156,8 +137,6 @@ end
 
 function dge.register(config)
 
-	dge.member[go.get_id()] = true
-
 	----------------------------------------------------------------------
 	-- INSTANCE PROPERTIES
 	----------------------------------------------------------------------
@@ -174,7 +153,7 @@ function dge.register(config)
 	local _lerp_callback = {}
 
 	----------------------------------------------------------------------
-	-- INSTANCE CONSTANT FUNCTIONS
+	-- INSTANCE FUNCTIONS
 	----------------------------------------------------------------------
 
 	function member.get_size()
@@ -206,12 +185,8 @@ function dge.register(config)
 	end
 
 	function member.reach()
-		return member.get_grid_position() + neighbor[_direction.value]
+		return member.get_grid_position() + _direction.offset
 	end
-
-	----------------------------------------------------------------------
-	-- INSTANCE VOLATILE FUNCTIONS
-	----------------------------------------------------------------------
 
 	local function snap()
 		go.set_position(dge.to_pixel_position(dge.to_grid_position(go.get_position() + _offset)) - _offset)
@@ -363,6 +338,7 @@ function dge.register(config)
 		dge.member[go.get_id()] = nil
 	end
 
+	dge.member[go.get_id()] = true
 	snap()
 
 	return member
