@@ -15,7 +15,7 @@ background_color {
 }
 nodes {
   position {
-    x: 1272.0
+    x: 1270.0
     y: 0.0
     z: 0.0
     w: 1.0
@@ -46,11 +46,11 @@ nodes {
   }
   type: TYPE_TEXT
   blend_mode: BLEND_MODE_ALPHA
-  text: "Kowalski Game Development"
+  text: "Klayton Kowalski"
   font: "font"
-  id: "kowalskigamedevelopment"
-  xanchor: XANCHOR_NONE
-  yanchor: YANCHOR_NONE
+  id: "name"
+  xanchor: XANCHOR_RIGHT
+  yanchor: YANCHOR_BOTTOM
   pivot: PIVOT_SE
   outline {
     x: 0.0

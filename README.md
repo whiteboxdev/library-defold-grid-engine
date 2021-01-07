@@ -1,17 +1,17 @@
 # Defold Grid Engine
-Defold Grid Engine (DGE) 0.4.1 provides grid-based movement, interactions, and utility features to a Defold game engine project. Two examples of video game franchises that use grid-based systems are Pokémon and Fire Emblem.
+Defold Grid Engine (DGE) 0.4.1 provides grid-based movement, interactions, and utility features to a Defold game engine project.
 
-An [example project](https://github.com/kowalskigamedevelopment/defold-grid-engine/tree/master/example) is available if you need additional help with configuration.  
-Visit [my website](https://kowalskigamedevelopment.github.io/html/extensions.html#dge) to see an animated gif of the example project.
+An [example project](https://github.com/klaytonkowalski/defold-grid-engine/tree/master/example) is available if you need additional help with configuration.  
+Visit [my website](https://klaytonkowalski.github.io/html/extensions.html#dge) to see an animated gif of the example project.
 
 Please click the "Star" button on GitHub if you find this asset to be useful!
 
-![alt text](https://github.com/kowalskigamedevelopment/defold-grid-engine/blob/master/assets/thumbnail.png?raw=true)
+![alt text](https://github.com/klaytonkowalski/defold-grid-engine/blob/master/assets/thumbnail.png?raw=true)
 
 ## Installation
 To install DGE into your project, add one of the following links to your `game.project` dependencies:
-  - https://github.com/kowalskigamedevelopment/defold-grid-engine/archive/master.zip
-  - URL of a [specific release](https://github.com/kowalskigamedevelopment/defold-grid-engine/releases)
+  - https://github.com/klaytonkowalski/defold-grid-engine/archive/master.zip
+  - URL of a [specific release](https://github.com/klaytonkowalski/defold-grid-engine/releases)
 
 ## Configuration
 Import the DGE Lua module into your character's script:
