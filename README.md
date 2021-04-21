@@ -1,21 +1,21 @@
 # Defold Grid Engine
-Defold Grid Engine (DGE) 0.4.1 provides grid-based movement, interactions, and utility features to a Defold game engine project.
+Defold Grid Engine (dgrid) 0.4.2 provides grid-based movement, interactions, and utility features to a Defold game engine project.
 
 An [example project](https://github.com/klaytonkowalski/defold-grid-engine/tree/master/example) is available if you need additional help with configuration.  
-Visit [my website](https://klaytonkowalski.github.io/html/extensions.html#dge) to see an animated gif of the example project.
+Visit my [Giphy](https://media.giphy.com/media/YFnSgIm0DdVJmTmN3N/giphy.gif) to see an animated gif of the example project.
 
 Please click the "Star" button on GitHub if you find this asset to be useful!
 
 ![alt text](https://github.com/klaytonkowalski/defold-grid-engine/blob/master/assets/thumbnail.png?raw=true)
 
 ## Installation
-To install DGE into your project, add one of the following links to your `game.project` dependencies:
+To install dgrid into your project, add one of the following links to your `game.project` dependencies:
   - https://github.com/klaytonkowalski/defold-grid-engine/archive/master.zip
   - URL of a [specific release](https://github.com/klaytonkowalski/defold-grid-engine/releases)
 
 ## Configuration
-Import the DGE Lua module into your character's script:
-`local dge = require "dge.dge"`
+Import the dgrid Lua module into your character's script:
+`local dgrid = require "dgrid.dgrid"`
 
 The grid system itself must be initialized before registering any characters:
 
@@ -36,31 +36,31 @@ local property_map = {
 }
 
 function init(self)
-    dge.set_stride(grid_box_size)
-    dge.set_collision_map(collision_map)
-    dge.set_property_map(property_map)
+    dgrid.set_stride(grid_box_size)
+    dgrid.set_collision_map(collision_map)
+    dgrid.set_property_map(property_map)
 end
 ```
 
-The `dge.set_stride()` function sets the size of each grid box. In the example above, each grid box is set to 16 pixels.
+The `dgrid.set_stride()` function sets the size of each grid box. In the example above, each grid box is set to 16 pixels.
 
-The `dge.set_collision_map()` function assigns a collision map to the grid. Collision maps consist of a two-dimensional array of integers, each of which corresponds to a collision tag. All tags can be found in the `dge.tag` [table](#dgetag). Custom tags may be inserted into the `dge.tag` table if you wish to detect additional collision cases. DGE will post a `dge.msg.collide_passable` or `dge.msg.collide_impassable` message to your character's `on_message()` function when your character collides with any grid box. If you did not specify a collision map, then `dge.msg.collide_none` will be posted instead.
+The `dgrid.set_collision_map()` function assigns a collision map to the grid. Collision maps consist of a two-dimensional array of integers, each of which corresponds to a collision tag. All tags can be found in the `dgrid.tag` [table](#dgridtag). Custom tags may be inserted into the `dgrid.tag` table if you wish to detect additional collision cases. dgrid will post a `dgrid.msg.collide_passable` or `dgrid.msg.collide_impassable` message to your character's `on_message()` function when your character collides with any grid box. If you did not specify a collision map, then `dgrid.msg.collide_none` will be posted instead.
 
-The `dge.set_property_map()` function assigns a property map to the grid. Property maps consist of a table of custom data. The purpose of this map is to assign semantics to your grid boxes. Keys correspond to the x and y coordinates of the targetted grid box, while values correspond to the custom data. When a character collides with a grid box that contains custom data, the data is attached to the `dge.msg.collide` messages as the `message.property` field. In the example above, colliding with the grid box at coordinates <3, 1> will send a `message.property` value of `{ bonus_points = 1000 }`.
+The `dgrid.set_property_map()` function assigns a property map to the grid. Property maps consist of a table of custom data. The purpose of this map is to assign semantics to your grid boxes. Keys correspond to the x and y coordinates of the targetted grid box, while values correspond to the custom data. When a character collides with a grid box that contains custom data, the data is attached to the `dgrid.msg.collide` messages as the `message.property` field. In the example above, colliding with the grid box at coordinates <3, 1> will send a `message.property` value of `{ bonus_points = 1000 }`.
 
-If the bottom-left of your tilemap is not located at the origin of the game world, you should call the `dge.set_map_offset()` function, which allows you to shift your collision and property maps to match up with the world position of your tilemap.
+If the bottom-left of your tilemap is not located at the origin of the game world, you should call the `dgrid.set_map_offset()` function, which allows you to shift your collision and property maps to match up with the world position of your tilemap.
 
 Configuration is complete. Next step is to register your characters:
 
 ```
 local config = {
     size = vmath.vector3(16, 32, 0),
-    direction = dge.direction.down,
+    direction = dgrid.direction.down,
     speed = 3
 }
 
 function init(self)
-    self.dge = dge.register(config)
+    self.dgrid = dgrid.register(config)
 end
 ```
 
@@ -68,28 +68,28 @@ end
 2. `direction`: Initial direction in which your character is looking.
 3. `speed`: Movement speed in grid boxes per second. If `speed = 0`, then movement is instant.
 
-DGE snaps your character into a grid box on registration. To do this, the bottom-center `stride x stride` square region of your character is used to properly position it onto the grid.
+dgrid snaps your character into a grid box on registration. To do this, the bottom-center `stride x stride` square region of your character is used to properly position it onto the grid.
 
-Finally, make sure to call `self.dge.update()` and `self.dge.unregister()` in your character's script:
+Finally, make sure to call `self.dgrid.update()` and `self.dgrid.unregister()` in your character's script:
 
 ```
 function update(self, dt)
-    self.dge.update(dt)
+    self.dgrid.update(dt)
 end
 
 function final(self)
-    self.dge.unregister()
+    self.dgrid.unregister()
 end
 ```
 
 ## API: Properties
 
-### dge.direction
+### dgrid.direction
 
 Table for referencing character orientation:
 
 ```
-dge.direction = {
+dgrid.direction = {
 	up = { value = 1, string = "up", offset = vmath.vector3(0, 1, 0) },
 	left = { value = 2, string = "left", offset = vmath.vector3(-1, 0, 0) },
 	down = { value = 3, string = "down", offset = vmath.vector3(0, -1, 0) },
@@ -101,12 +101,12 @@ dge.direction = {
 2. `string`: Name of this direction.  
 3. `offset`: Coordinate offset of this direction.
 
-### dge.msg
+### dgrid.msg
 
 Table for referencing messages posted to your character's `on_message()` function:
 
 ```
-dge.msg = {
+dgrid.msg = {
     move_start = hash("move_start"),
     move_end = hash("move_end"),
     move_repeat = hash("move_repeat"),
@@ -123,12 +123,12 @@ dge.msg = {
 5. `collide_passable`: Posted when your character collides with any passable grid box. The `message.name` field contains the tag's hashed `name` string. The `message.property` field contains the user-defined data at this grid position.
 6. `collide_impassable`: Posted when your character collides with any impassable grid box. The `message.name` field contains the tag's hashed `name` string. The `message.property` field contains the user-defined data at this grid position.
 
-### dge.tag
+### dgrid.tag
 
 Table for referencing collision tags. Each key (index of tag) corresponds to an integer used in your collision map. Custom tags may be inserted if you wish to detect additional collision cases.
 
 ```
-dge.tag = {
+dgrid.tag = {
     { name = hash("passable"), passable = true },
     { name = hash("impassable"), passable = false }
 }
@@ -139,7 +139,7 @@ dge.tag = {
 
 ## API: Functions
 
-### dge.get_stride()
+### dgrid.get_stride()
 
 Gets the size of each grid box in pixels.
 
@@ -149,7 +149,7 @@ Returns a number.
 
 ---
 
-### dge.get_collision_map()
+### dgrid.get_collision_map()
 
 Gets the collision map.
 
@@ -166,7 +166,7 @@ Returns a table of lists of integers in the following format:
 
 ---
 
-### dge.get_property_map()
+### dgrid.get_property_map()
 
 Gets the property map.
 
@@ -183,7 +183,7 @@ Returns a table of custom data. Keys correspond to the x and y coordinates of th
 
 ---
 
-### dge.get_map_offset()
+### dgrid.get_map_offset()
 
 Gets the collision and property map offset.
 
@@ -193,7 +193,7 @@ Returns a `vector3`.
 
 ---
 
-### dge.get_tag(name)
+### dgrid.get_tag(name)
 
 Gets tag information.
 
@@ -213,7 +213,7 @@ Returns a table in the following format:
 
 ---
 
-### dge.to_pixel_position(grid_position)
+### dgrid.to_pixel_position(grid_position)
 
 Converts grid coordinates to pixel coordinates. The returned pixel coordinates point to the center of the grid box.
 
@@ -226,7 +226,7 @@ Returns a `vector3`.
 
 ---
 
-### dge.to_grid_position(pixel_position)
+### dgrid.to_grid_position(pixel_position)
 
 Converts pixel coordinates to grid coordinates.
 
@@ -239,7 +239,7 @@ Returns a `vector3`.
 
 ---
 
-### dge.to_map_position(grid_position)
+### dgrid.to_map_position(grid_position)
 
 Converts grid coordinates to map coordinates. Map coordinates take into account the `map_offset`.
 
@@ -252,7 +252,7 @@ Returns a `vector3`.
 
 ---
 
-### dge.set_stride(stride)
+### dgrid.set_stride(stride)
 
 Sets the size of each grid box in pixels.
 
@@ -261,7 +261,7 @@ Sets the size of each grid box in pixels.
 
 ---
 
-### dge.set_collision_map(collision_map)
+### dgrid.set_collision_map(collision_map)
 
 Sets the collision map.
 
@@ -277,7 +277,7 @@ Sets the collision map.
 
 ---
 
-### dge.set_property_map(property_map)
+### dgrid.set_property_map(property_map)
 
 Sets the property map.
 
@@ -293,7 +293,7 @@ Sets the property map.
 
 ---
 
-### dge.set_map_offset(offset)
+### dgrid.set_map_offset(offset)
 
 Sets the collision and property map offset. If the bottom-left of your tilemap is not loaded at the origin of the game world, then this function will allow you to shift your collision property maps to match up with the world position of your tilemap.
 
@@ -302,7 +302,7 @@ Sets the collision and property map offset. If the bottom-left of your tilemap i
 
 ---
 
-### dge.set_tag(name, passable)
+### dgrid.set_tag(name, passable)
 
 Sets an existing tag's `passable` flag.
 
@@ -312,9 +312,9 @@ Sets an existing tag's `passable` flag.
 
 ---
 
-### dge.add_tag(name, passable)
+### dgrid.add_tag(name, passable)
 
-Adds a tag to the `dge.tag` table.
+Adds a tag to the `dgrid.tag` table.
 
 #### Parameters
 1. `name`: Hashed name of tag.
@@ -326,23 +326,23 @@ Returns the tag's integer value which may be used when constructing your collisi
 
 ---
 
-### dge.register(config)
+### dgrid.register(config)
 
 Registers the current game object in the grid system.
 
 #### Parameters
 1. `config`: Table for setting up this character's properties.
     1. `size`: `vector3` of integers specifying this character's dimensions in pixels.
-    2. `direction`: Initial `dge.direction` in which your character is looking.
+    2. `direction`: Initial `dgrid.direction` in which your character is looking.
     3. `speed`: Movement speed in grid boxes per second. If `speed = 0`, then movement is instant.
 
 #### Returns
 
-Returns an instance of DGE.
+Returns an instance of dgrid.
 
 ---
 
-### self.dge.get_size()
+### self.dgrid.get_size()
 
 Gets the size of this character in pixels.
 
@@ -352,17 +352,17 @@ Returns a number.
 
 ---
 
-### self.dge.get_direction()
+### self.dgrid.get_direction()
 
-Gets the `dge.direction` in which this character is looking.
+Gets the `dgrid.direction` in which this character is looking.
 
 #### Returns
 
-Returns an entry of the `dge.direction` [table](#dgedirection).
+Returns an entry of the `dgrid.direction` [table](#dgriddirection).
 
 ---
 
-### self.dge.get_speed()
+### self.dgrid.get_speed()
 
 Gets the speed of this character in grid boxes per second.
 
@@ -372,7 +372,7 @@ Returns a number.
 
 ---
 
-### self.dge.is_moving()
+### self.dgrid.is_moving()
 
 Checks if this character is moving.
 
@@ -382,7 +382,7 @@ Returns a `bool`.
 
 ---
 
-### self.dge.is_forcing_movement()
+### self.dgrid.is_forcing_movement()
 
 Checks if this character is able to move through impassable grid boxes specified by the collision map.
 
@@ -392,7 +392,7 @@ Returns a `bool`.
 
 ---
 
-### self.dge.get_grid_position()
+### self.dgrid.get_grid_position()
 
 Gets the grid coordinates of this character.
 
@@ -402,7 +402,7 @@ Returns a `vector3`.
 
 ---
 
-### self.dge.get_map_position()
+### self.dgrid.get_map_position()
 
 Gets the map coordinates of this character. Map coordinates take into account the `map_offset`.
 
@@ -412,7 +412,7 @@ Returns a `vector3`.
 
 ---
 
-### self.dge.reach()
+### self.dgrid.reach()
 
 Gets the position of the grid box directly in front of this character in grid coordinates.
 
@@ -422,16 +422,16 @@ Returns a `vector3`.
 
 ---
 
-### self.dge.set_direction(direction)
+### self.dgrid.set_direction(direction)
 
-Sets the `dge.direction` in which this character is looking. This affects the return value of funtions such as `self.dge.reach()`. This is also useful for simply turning a character in some direction without actually moving.
+Sets the `dgrid.direction` in which this character is looking. This affects the return value of funtions such as `self.dgrid.reach()`. This is also useful for simply turning a character in some direction without actually moving.
 
 #### Parameters
-1. `direction`: Entry in the `dge.direction` [table](#dgedirection).
+1. `direction`: Entry in the `dgrid.direction` [table](#dgriddirection).
 
 ---
 
-### self.dge.set_speed(speed)
+### self.dgrid.set_speed(speed)
 
 Sets the speed of this character in grid boxes per second.
 
@@ -440,7 +440,7 @@ Sets the speed of this character in grid boxes per second.
 
 ---
 
-### self.dge.force_movement(flag)
+### self.dgrid.force_movement(flag)
 
 Allows this character to move through impassable grid boxes as specified by the collision map.
 
@@ -449,7 +449,7 @@ Allows this character to move through impassable grid boxes as specified by the 
 
 ---
 
-### self.dge.add_lerp_callback(callback, volatile)
+### self.dgrid.add_lerp_callback(callback, volatile)
 
 Adds a lerp callback, which triggers upon each complete character movement.
 
@@ -459,7 +459,7 @@ Adds a lerp callback, which triggers upon each complete character movement.
 
 ---
 
-### self.dge.remove_lerp_callback(callback, volatile)
+### self.dgrid.remove_lerp_callback(callback, volatile)
 
 Removes a lerp callback, which triggers upon each complete character movement. Does nothing if the specified callback does not exist.
 
@@ -469,7 +469,7 @@ Removes a lerp callback, which triggers upon each complete character movement. D
 
 ---
 
-### self.dge.set_grid_position(grid_position)
+### self.dgrid.set_grid_position(grid_position)
 
 Sets the position of this character in grid coordinates.
 
@@ -478,25 +478,25 @@ Sets the position of this character in grid coordinates.
 
 ---
 
-### self.dge.move(direction)
+### self.dgrid.move(direction)
 
-Begin moving in some direction. Movement will continue until `self.dge.stop()` is called.
+Begin moving in some direction. Movement will continue until `self.dgrid.stop()` is called.
 
 #### Parameters
-1. `direction`: Entry in the `dge.direction` [table](#dgedirection).
+1. `direction`: Entry in the `dgrid.direction` [table](#dgriddirection).
 
 ---
 
-### self.dge.stop(direction)
+### self.dgrid.stop(direction)
 
 Stop moving in some direction.
 
 #### Parameters
-1. `direction`: Entry in the `dge.direction` [table](#dgedirection). Omit this argument if you wish to stop movement in all directions instead of just one.
+1. `direction`: Entry in the `dgrid.direction` [table](#dgriddirection). Omit this argument if you wish to stop movement in all directions instead of just one.
 
 ---
 
-### self.dge.update(dt)
+### self.dgrid.update(dt)
 
 Updates all relevant properties. Must be called in this character's `update()` function.
 
@@ -505,6 +505,6 @@ Updates all relevant properties. Must be called in this character's `update()` f
 
 ---
 
-### self.dge.unregister()
+### self.dgrid.unregister()
 
-Unregisters this character from DGE. Must be called in this character's `final()` function.
+Unregisters this character from dgrid. Must be called in this character's `final()` function.

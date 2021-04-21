@@ -1,4 +1,4 @@
-local dge = require "dge.dge"
+local dgrid = require "dgrid.dgrid"
 local rendercam = require "rendercam.rendercam"
 
 local stride = 80
@@ -7,7 +7,7 @@ local dash_speed = 6
 
 local member_config = {
 	size = vmath.vector3(stride, stride, 0),
-	direction = dge.direction.down,
+	direction = dgrid.direction.down,
 	speed = walk_speed
 }
 
@@ -32,10 +32,10 @@ function init(self)
 	msg.post("#", h_str.acquire_input_focus)
 	rendercam.follow_lerp_speed = 8
 	rendercam.follow("/player")
-	dge.add_tag(h_str.custom_tag_1, true)
-	dge.add_tag(h_str.custom_tag_2, false)
-	dge.set_stride(stride)
-	dge.set_collision_map({
+	dgrid.add_tag(h_str.custom_tag_1, true)
+	dgrid.add_tag(h_str.custom_tag_2, false)
+	dgrid.set_stride(stride)
+	dgrid.set_collision_map({
 		{ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 },
 		{ 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2 },
 		{ 2, 2, 1, 1, 1, 1, 4, 1, 1, 1, 1, 2, 2 },
@@ -52,36 +52,36 @@ function init(self)
 		{ 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2 },
 		{ 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 }
 	})
-	dge.set_property_map({
+	dgrid.set_property_map({
 		["73"] = { gold = 9001 }
 	})
-	self.dge = dge.register(member_config)
+	self.dgrid = dgrid.register(member_config)
 end
 
 function final(self)
-	self.dge.unregister()
+	self.dgrid.unregister()
 end
 
 function update(self, dt)
-	self.dge.update(dt)
+	self.dgrid.update(dt)
 end
 
 function on_input(self, action_id, action)
 	if action.pressed then
 		if action_id == h_str.up then
-			self.dge.move(dge.direction.up)
+			self.dgrid.move(dgrid.direction.up)
 			msg.post("/map#gui", h_str.clear)
 		elseif action_id == h_str.left then
-			self.dge.move(dge.direction.left)
+			self.dgrid.move(dgrid.direction.left)
 			msg.post("/map#gui", h_str.clear)
 		elseif action_id == h_str.down then
-			self.dge.move(dge.direction.down)
+			self.dgrid.move(dgrid.direction.down)
 			msg.post("/map#gui", h_str.clear)
 		elseif action_id == h_str.right then
-			self.dge.move(dge.direction.right)
+			self.dgrid.move(dgrid.direction.right)
 			msg.post("/map#gui", h_str.clear)
-		elseif action_id == h_str.reach and not self.dge.is_moving() then
-			local tile_position = self.dge.reach()
+		elseif action_id == h_str.reach and not self.dgrid.is_moving() then
+			local tile_position = self.dgrid.reach()
 			local tile_id_object = tilemap.get_tile("/map#tilemap", h_str.object, tile_position.x, tile_position.y)
 			local tile_id_terrain = tilemap.get_tile("/map#tilemap", h_str.terrain, tile_position.x, tile_position.y)
 			if tile_id_object ~= 0 then
@@ -90,35 +90,35 @@ function on_input(self, action_id, action)
 				msg.post("/map#gui", h_str.display, { id = tile_id_terrain })
 			end
 		elseif action_id == h_str.fast then
-			self.dge.set_speed(dash_speed)
+			self.dgrid.set_speed(dash_speed)
 		end
 	elseif action.released then
 		if action_id == h_str.up then
-			self.dge.stop(dge.direction.up)
+			self.dgrid.stop(dgrid.direction.up)
 		elseif action_id == h_str.left then
-			self.dge.stop(dge.direction.left)
+			self.dgrid.stop(dgrid.direction.left)
 		elseif action_id == h_str.down then
-			self.dge.stop(dge.direction.down)
+			self.dgrid.stop(dgrid.direction.down)
 		elseif action_id == h_str.right then
-			self.dge.stop(dge.direction.right)
+			self.dgrid.stop(dgrid.direction.right)
 		elseif action_id == h_str.fast then
-			self.dge.set_speed(walk_speed)
+			self.dgrid.set_speed(walk_speed)
 		end
 	end
 end
 
 function on_message(self, message_id, message, sender)
-	if message_id == dge.msg.move_start then
-		print("Caught dge.msg.move_start.")
-	elseif message_id == dge.msg.move_end then
-		print("Caught dge.msg.move_end.")
-	elseif message_id == dge.msg.move_repeat then
-		print("Caught dge.msg.move_repeat.")
-	elseif message_id == dge.msg.collide_none then
-		print("Caught dge.msg.collide_none")
-	elseif message_id == dge.msg.collide_passable then
-		print("Caught dge.msg.collide_passable. Tag name:", message.name, "Property:", message.property and message.property.gold or nil)
-	elseif message_id == dge.msg.collide_impassable then
-		print("Caught dge.msg.collide_passable. Tag name:", message.name, "Property:", message.property and message.property.gold or nil)
+	if message_id == dgrid.msg.move_start then
+		print("Caught dgrid.msg.move_start.")
+	elseif message_id == dgrid.msg.move_end then
+		print("Caught dgrid.msg.move_end.")
+	elseif message_id == dgrid.msg.move_repeat then
+		print("Caught dgrid.msg.move_repeat.")
+	elseif message_id == dgrid.msg.collide_none then
+		print("Caught dgrid.msg.collide_none")
+	elseif message_id == dgrid.msg.collide_passable then
+		print("Caught dgrid.msg.collide_passable. Tag name:", message.name, "Property:", message.property and message.property.gold or nil)
+	elseif message_id == dgrid.msg.collide_impassable then
+		print("Caught dgrid.msg.collide_passable. Tag name:", message.name, "Property:", message.property and message.property.gold or nil)
 	end
 end

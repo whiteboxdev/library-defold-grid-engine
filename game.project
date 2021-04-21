@@ -15,9 +15,12 @@ input_method = HiddenInputField
 [project]
 title = Defold Grid Engine
 dependencies = https://github.com/rgrams/rendercam/archive/master.zip
+version = 0.4.2
+publisher = Klayton Kowalski
+developer = Klayton Kowalski
 
 [library]
-include_dirs = dge
+include_dirs = dgrid
 default_texture_min_filter = nearest
 default_texture_mag_filter = nearest
 
