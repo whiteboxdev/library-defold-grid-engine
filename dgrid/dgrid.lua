@@ -27,322 +27,384 @@
 -- https://github.com/klaytonkowalski/defold-grid-engine
 
 ----------------------------------------------------------------------
--- MODULE PROPERTIES
+-- PROPERTIES
 ----------------------------------------------------------------------
 
 local dgrid = {}
 
-dgrid.member = {}
-dgrid.stride = 0
-dgrid.collision_map = {}
-dgrid.property_map = {}
-dgrid.map_offset = vmath.vector3()
+local tile_width
+local tile_height
 
-dgrid.tag = {
-	{ name = hash("passable"), passable = true },
-	{ name = hash("impassable"), passable = false }
+local entities = {}
+
+local map = {}
+local map_width
+local map_height
+local map_offset_x = 0
+local map_offset_y = 0
+
+local tags =
+{
+	[1] = { id = hash("passable"), passable = true },
+	[2] = { id = hash("impassable"), passable = false }
 }
 
-dgrid.direction = {
-	up = { value = 1, string = "up", offset = vmath.vector3(0, 1, 0) },
-	left = { value = 2, string = "left", offset = vmath.vector3(-1, 0, 0) },
-	down = { value = 3, string = "down", offset = vmath.vector3(0, -1, 0) },
-	right = { value = 4, string = "right", offset = vmath.vector3(1, 0, 0) }
-}
+----------------------------------------------------------------------
+-- CONSTANTS
+----------------------------------------------------------------------
 
-dgrid.msg = {
+dgrid.messages =
+{
+	turn = hash("turn"),
 	move_start = hash("move_start"),
-	move_end = hash("move_end"),
-	move_repeat = hash("move_repeat"),
-	collide_none = hash("collide_none"),
+	move_complete = hash("move_complete"),
 	collide_passable = hash("collide_passable"),
-	collide_impassable = hash("collide_impassable")
+	collide_impassable = hash("collide_impassable"),
+	collide_entity = hash("collide_entity")
 }
+
+----------------------------------------------------------------------
+-- LOCAL FUNCTIONS
+----------------------------------------------------------------------
+
+local function to_tile_position(pixel_x, pixel_y)
+	return math.floor(pixel_x / tile_width) + 1, math.floor(pixel_y / tile_height) + 1
+end
+
+local function to_pixel_position(tile_x, tile_y)
+	return tile_x * tile_width - tile_width * 0.5, tile_y * tile_height - tile_height * 0.5
+end
+
+local function to_map_position(tile_x, tile_y)
+	return tile_x - map_offset_x, tile_y - map_offset_y
+end
+
+local function get_forward_tile_position(tile_x, tile_y, direction)
+	if direction == 1 then
+		return tile_x, tile_y + 1
+	end
+	if direction == 2 then
+		return tile_x - 1, tile_y
+	end
+	if direction == 3 then
+		return tile_x, tile_y - 1
+	end
+	if direction == 4 then
+		return tile_x + 1, tile_y
+	end
+end
+
+local function check_tag_collision(tile_x, tile_y)
+	local forward_map_x, forward_map_y = to_map_position(tile_x, tile_y)
+	return map[forward_map_y][forward_map_x]
+end
+
+local function check_entity_collision(tile_x, tile_y)
+	for _, entity in pairs(entities) do
+		if entity.tile_x == tile_x and entity.tile_y == tile_y then
+			return entity
+		end
+	end
+end
+
+local function check_collision(entity, direction)
+	local forward_tile_x, forward_tile_y = get_forward_tile_position(entity.tile_x, entity.tile_y, direction)
+	local tile = check_tag_collision(forward_tile_x, forward_tile_y)
+	if tile.tag.passable then
+		msg.post(entity.url, dgrid.messages.collide_passable, { entity = entity, tag = tile.tag, data = tile.data })
+	else
+		msg.post(entity.url, dgrid.messages.collide_impassable, { entity = entity, tag = tile.tag, data = tile.data })
+		return true
+	end
+	local other_entity = check_entity_collision(forward_tile_x, forward_tile_y)
+	if other_entity then
+		msg.post(entity.url, dgrid.messages.collide_entity, { entity = entity, other_entity = other_entity })
+		return true
+	end
+end
+
+local function move(entity, dt)
+	local position = go.get_position(entity.id)
+	entity.dt = entity.dt + dt * entity.speed
+	if entity.direction == 1 then
+		local current_y = vmath.lerp(entity.dt, entity.start_y, entity.target_y)
+		if current_y > entity.target_y then
+			current_y = entity.target_y
+		end
+		go.set_position(vmath.vector3(position.x, current_y, position.z), entity.id)
+	elseif entity.direction == 2 then
+		local current_x = vmath.lerp(entity.dt, entity.start_x, entity.target_x)
+		if current_x < entity.target_x then
+			current_x = entity.target_x
+		end
+		go.set_position(vmath.vector3(current_x, position.y, position.z), entity.id)
+	elseif entity.direction == 3 then
+		local current_y = vmath.lerp(entity.dt, entity.start_y, entity.target_y)
+		if current_y < entity.target_y then
+			current_y = entity.target_y
+		end
+		go.set_position(vmath.vector3(position.x, current_y, position.z), entity.id)
+	elseif entity.direction == 4 then
+		local current_x = vmath.lerp(entity.dt, entity.start_x, entity.target_x)
+		if current_x > entity.target_x then
+			current_x = entity.target_x
+		end
+		go.set_position(vmath.vector3(current_x, position.y, position.z), entity.id)
+	end
+end
+
+local function is_move_complete(entity)
+	local position = go.get_position(entity.id)
+	if entity.direction == 1 then
+		return position.y == entity.target_y
+	elseif entity.direction == 2 then
+		return position.x == entity.target_x
+	elseif entity.direction == 3 then
+		return position.y == entity.target_y
+	elseif entity.direction == 4 then
+		return position.x == entity.target_x
+	end
+end
+
+local function complete_move(entity)
+	entity.moving = false
+	entity.speed = nil
+	entity.dt = nil
+	entity.start_x = nil
+	entity.start_y = nil
+	entity.target_x = nil
+	entity.target_y = nil
+	msg.post(entity.url, dgrid.messages.move_complete, { entity = entity })
+end
+
+local function snap_to_tile(entity)
+	local position = go.get_position(entity.id)
+	local tile_x, tile_y = to_tile_position(position.x, position.y)
+	local pixel_x, pixel_y = to_pixel_position(tile_x, tile_y)
+	go.set_position(vmath.vector3(pixel_x, pixel_y, position.z))
+end
 
 ----------------------------------------------------------------------
 -- MODULE FUNCTIONS
 ----------------------------------------------------------------------
 
-function dgrid.get_stride()
-	return dgrid.stride
+function dgrid.set_tile_dimensions(width, height)
+	tile_width = width
+	tile_height = height
 end
 
-function dgrid.get_collision_map()
-	return dgrid.collision_map
-end
-
-function dgrid.get_property_map()
-	return dgrid.property_map
-end
-
-function dgrid.get_map_offset()
-	return dgrid.map_offset
-end
-
-function dgrid.get_tag(name)
-	for key, value in ipairs(dgrid.tag) do
-		if value.name == name then
-			return { key = key, value = value }
+function dgrid.set_map_dimensions(width, height)
+	map = {}
+	map_width = width
+	map_height = height
+	for y = 1, height do
+		table.insert(map, {})
+		for x = 1, width do
+			table.insert(map[y], { tag = tags[1], data = {} })
 		end
 	end
 end
 
-function dgrid.to_pixel_position(grid_position)
-	local half_stride = dgrid.stride * 0.5
-	return vmath.vector3(grid_position.x * dgrid.stride - half_stride, grid_position.y * dgrid.stride - half_stride, grid_position.z)
+function dgrid.set_map_offset(x, y)
+	map_offset_x = x
+	map_offset_y = y
 end
 
-function dgrid.to_grid_position(pixel_position)
-	return vmath.vector3(math.floor(pixel_position.x / dgrid.stride) + 1, math.floor(pixel_position.y / dgrid.stride) + 1, pixel_position.z)
-end
-
-function dgrid.to_map_position(grid_position)
-	local result = vmath.vector3(grid_position.x - dgrid.map_offset.x, #dgrid.collision_map - grid_position.y + 1 + dgrid.map_offset.y, 0)
-	if 1 <= result.y and result.y <= #dgrid.collision_map and 1 <= result.x and result.x <= #dgrid.collision_map[1] then
-		return result
-	end
-	return nil
-end
-
-function dgrid.set_stride(stride)
-	dgrid.stride = stride
-end
-
-function dgrid.set_collision_map(collision_map)
-	dgrid.collision_map = collision_map
-end
-
-function dgrid.set_property_map(property_map)
-	dgrid.property_map = property_map
-end
-
-function dgrid.set_map_offset(offset)
-	dgrid.map_offset = offset
-end
-
-function dgrid.set_tag(name, passable)
-	for key, value in ipairs(dgrid.tag) do
-		if value.name == name then
-			value.passable = passable
+function dgrid.set_map_tags(keys)
+	for y = 1, #keys do
+		for x = 1, #keys[y] do
+			map[y][x].tag = tags[keys[#keys - y + 1][x]]
 		end
 	end
 end
 
-function dgrid.add_tag(name, passable)
-	if not dgrid.get_tag(name) then
-		table.insert(dgrid.tag, { name = name, passable = passable })
-		return #dgrid.tag
+function dgrid.add_tag(id, passable)
+	table.insert(tags, { id = id, passable = passable })
+	return #tags
+end
+
+function dgrid.modify_tag(key, passable)
+	tags[key].passable = passable
+end
+
+function dgrid.set_map_data(x, y, data)
+	map[y][x].data = data
+end
+
+function dgrid.add_entity(id, url, center, direction)
+	if not entities[id] then
+		local position = go.get_position(id)
+		local tile_x, tile_y = to_tile_position(position.x, position.y)
+		entities[id] =
+		{
+			id = id,
+			url = url,
+			center = center,
+			direction = direction,
+			moving = false,
+			speed = nil,
+			dt = nil,
+			start_x = nil,
+			start_y = nil,
+			target_x = nil,
+			target_y = nil,
+			tile_x = tile_x,
+			tile_y = tile_y
+		}
+		snap_to_tile(entities[id])
 	end
 end
 
-function dgrid.register(config)
+function dgrid.remove_entity(id)
+	entities[id] = nil
+end
 
-	----------------------------------------------------------------------
-	-- INSTANCE PROPERTIES
-	----------------------------------------------------------------------
+function dgrid.clear_entities()
+	entities = {}
+end
 
-	local member = {}
-	local _size = config.size
-	local _direction = config.direction
-	local _speed = config.speed
-	local _offset = vmath.vector3(0, dgrid.stride * 0.5 - _size.y * 0.5, 0)
-	local _input = { up = false, left = false, down = false, right = false }
-	local _moving = false
-	local _force = false
-	local _lerp = { t = 0, v1 = vmath.vector3(), v2 = vmath.vector3() }
-	local _lerp_callback = {}
-
-	----------------------------------------------------------------------
-	-- INSTANCE FUNCTIONS
-	----------------------------------------------------------------------
-
-	function member.get_size()
-		return _size
+function dgrid.set_url(id, url)
+	if entities[id] then
+		entities[id].url = url
 	end
+end
 
-	function member.get_direction()
-		return _direction
+function dgrid.turn_up(id)
+	local entity = entities[id]
+	if entity and not entity.moving then
+		entity.direction = 1
+		msg.post(entity.url, dgrid.messages.turn, { entity = entity })
 	end
+end
 
-	function member.get_speed()
-		return _speed
+function dgrid.turn_left(id)
+	local entity = entities[id]
+	if entity and not entity.moving then
+		entity.direction = 2
+		msg.post(entity.url, dgrid.messages.turn, { entity = entity })
 	end
+end
 
-	function member.is_moving()
-		return _moving
+function dgrid.turn_down(id)
+	local entity = entities[id]
+	if entity and not entity.moving then
+		entity.direction = 3
+		msg.post(entity.url, dgrid.messages.turn, { entity = entity })
 	end
+end
 
-	function member.is_forcing_movement()
-		return _force
+function dgrid.turn_right(id)
+	local entity = entities[id]
+	if entity and not entity.moving then
+		entity.direction = 4
+		msg.post(entity.url, dgrid.messages.turn, { entity = entity })
 	end
+end
 
-	function member.get_grid_position()
-		return dgrid.to_grid_position(go.get_position() + _offset)
-	end
+function dgrid.get_direction(id)
+	return entities[id] and entities[id].direction
+end
 
-	function member.get_map_position()
-		return dgrid.to_map_position(member.get_grid_position())
-	end
-
-	function member.reach()
-		return member.get_grid_position() + _direction.offset
-	end
-
-	local function snap()
-		go.set_position(dgrid.to_pixel_position(dgrid.to_grid_position(go.get_position() + _offset)) - _offset)
-	end
-
-	local function lerp(dt)
-		local complete = false
-		_lerp.t = _speed == 0 and 1 or _lerp.t + dt * _speed
-		local progress = vmath.lerp(_lerp.t, _lerp.v1, _lerp.v2)
-		if _lerp.t >= 1 then
-			_lerp.t = 0
-			_moving = false
-			progress = _lerp.v2
-			complete = true
-			if #_lerp_callback > 0 then
-				local i = 1
-				while i <= #_lerp_callback do
-					_lerp_callback[i].callback()
-					if _lerp_callback[i].volatile then
-						table.remove(_lerp_callback, i)
-					else
-						i = i + 1
-					end
-				end
-			end
-		end
-		go.set_position(progress)
-		return complete
-	end
-
-	function member.set_direction(direction)
-		_direction = direction
-	end
-
-	function member.set_speed(speed)
-		_speed = speed
-	end
-
-	function member.force_movement(flag)
-		_force = flag
-	end
-
-	function member.add_lerp_callback(callback, volatile)
-		table.insert(_lerp_callback, { callback = callback, volatile = volatile })
-	end
-
-	function member.remove_lerp_callback(callback, volatile)
-		for key, value in ipairs(_lerp_callback) do
-			if value.callback == callback and value.volatile == volatile then
-				table.remove(_lerp_callback, key)
+function dgrid.move_up(id, speed)
+	local entity = entities[id]
+	if entity then
+		if not entity.moving then
+			dgrid.turn_up(entity.id)
+			if not check_collision(entity, 1) then
+				entity.moving = true
+				entity.speed = speed
+				entity.dt = 0
+				local position = go.get_position(id)
+				entity.start_x = position.x
+				entity.start_y = position.y
+				entity.target_x = position.x
+				entity.target_y = position.y + tile_height
+				entity.tile_x, entity.tile_y = to_tile_position(entity.target_x, entity.target_y)
+				msg.post(entity.url, dgrid.messages.move_start, { entity = entity })
 			end
 		end
 	end
+end
 
-	function member.set_grid_position(grid_position)
-		if not _moving then
-			go.set_position(dgrid.to_pixel_position(grid_position) - _offset)
+function dgrid.move_left(id, speed)
+	local entity = entities[id]
+	if entity then
+		if not entity.moving then
+			dgrid.turn_left(entity.id)
+			if not check_collision(entity, 2) then
+				entity.moving = true
+				entity.speed = speed
+				entity.direction = 2
+				entity.dt = 0
+				local position = go.get_position(id)
+				entity.start_x = position.x
+				entity.start_y = position.y
+				entity.target_x = position.x - tile_width
+				entity.target_y = position.y
+				entity.tile_x, entity.tile_y = to_tile_position(entity.target_x, entity.target_y)
+				msg.post(entity.url, dgrid.messages.move_start, { entity = entity })
+			end
 		end
 	end
+end
 
-	function member.move(direction)
-		if direction == dgrid.direction.up then
-			_input.up = true
-		elseif direction == dgrid.direction.left then
-			_input.left = true
-		elseif direction == dgrid.direction.down then
-			_input.down = true
-		elseif direction == dgrid.direction.right then
-			_input.right = true
+function dgrid.move_down(id, speed)
+	local entity = entities[id]
+	if entity then
+		if not entity.moving then
+			dgrid.turn_down(entity.id)
+			if not check_collision(entity, 3) then
+				entity.moving = true
+				entity.speed = speed
+				entity.direction = 3
+				entity.dt = 0
+				local position = go.get_position(id)
+				entity.start_x = position.x
+				entity.start_y = position.y
+				entity.target_x = position.x
+				entity.target_y = position.y - tile_height
+				entity.tile_x, entity.tile_y = to_tile_position(entity.target_x, entity.target_y)
+				msg.post(entity.url, dgrid.messages.move_start, { entity = entity })
+			end
 		end
 	end
+end
 
-	function member.stop(direction)
-		if direction == dgrid.direction.up then
-			_input.up = false
-		elseif direction == dgrid.direction.left then
-			_input.left = false
-		elseif direction == dgrid.direction.down then
-			_input.down = false
-		elseif direction == dgrid.direction.right then
-			_input.right = false
-		elseif not direction then
-			_input = { up = false, left = false, down = false, right = false }
+function dgrid.move_right(id, speed)
+	local entity = entities[id]
+	if entity then
+		if not entity.moving then
+			dgrid.turn_right(entity.id)
+			if not check_collision(entity, 4) then
+				entity.moving = true
+				entity.speed = speed
+				entity.direction = 4
+				entity.dt = 0
+				local position = go.get_position(id)
+				entity.start_x = position.x
+				entity.start_y = position.y
+				entity.target_x = position.x + tile_width
+				entity.target_y = position.y
+				entity.tile_x, entity.tile_y = to_tile_position(entity.target_x, entity.target_y)
+				msg.post(entity.url, dgrid.messages.move_start, { entity = entity })
+			end
 		end
 	end
+end
 
-	function member.update(dt)
-		local complete = false
-		if _moving then
-			complete = lerp(dt)
-			if not complete then
-				return
+function dgrid.is_moving(id)
+	return entities[id] and entities[id].moving
+end
+
+function dgrid.update(dt)
+	for _, entity in pairs(entities) do
+		if entity.moving then
+			move(entity, dt)
+			if is_move_complete(entity) then
+				complete_move(entity)
 			end
-		end
-		if _input.up then
-			_direction = dgrid.direction.up
-			local map_position = dgrid.to_map_position(member.reach())
-			local tag = map_position and dgrid.tag[dgrid.collision_map[map_position.y][map_position.x]] or nil
-			msg.post("#", tag and (tag.passable and dgrid.msg.collide_passable or dgrid.msg.collide_impassable) or dgrid.msg.collide_none, tag and { name = tag.name, property = dgrid.property_map[map_position.x .. map_position.y] } or nil)
-			if not tag or tag.passable or _force then
-				_moving = true
-				_lerp.v1 = go.get_position()
-				_lerp.v2 = _lerp.v1 + vmath.vector3(0, dgrid.stride, 0)
-			end
-		elseif _input.left then
-			_direction = dgrid.direction.left
-			local map_position = dgrid.to_map_position(member.reach())
-			local tag = map_position and dgrid.tag[dgrid.collision_map[map_position.y][map_position.x]] or nil
-			msg.post("#", tag and (tag.passable and dgrid.msg.collide_passable or dgrid.msg.collide_impassable) or dgrid.msg.collide_none, tag and { name = tag.name, property = dgrid.property_map[map_position.x .. map_position.y] } or nil)
-			if not tag or tag.passable or _force then
-				_moving = true
-				_lerp.v1 = go.get_position()
-				_lerp.v2 = _lerp.v1 + vmath.vector3(-dgrid.stride, 0, 0)
-			end
-		elseif _input.down then
-			_direction = dgrid.direction.down
-			local map_position = dgrid.to_map_position(member.reach())
-			local tag = map_position and dgrid.tag[dgrid.collision_map[map_position.y][map_position.x]] or nil
-			msg.post("#", tag and (tag.passable and dgrid.msg.collide_passable or dgrid.msg.collide_impassable) or dgrid.msg.collide_none, tag and { name = tag.name, property = dgrid.property_map[map_position.x .. map_position.y] } or nil)
-			if not tag or tag.passable or _force then
-				_moving = true
-				_lerp.v1 = go.get_position()
-				_lerp.v2 = _lerp.v1 + vmath.vector3(0, -dgrid.stride, 0)
-			end
-		elseif _input.right then
-			_direction = dgrid.direction.right
-			local map_position = dgrid.to_map_position(member.reach())
-			local tag = map_position and dgrid.tag[dgrid.collision_map[map_position.y][map_position.x]] or nil
-			msg.post("#", tag and (tag.passable and dgrid.msg.collide_passable or dgrid.msg.collide_impassable) or dgrid.msg.collide_none, tag and { name = tag.name, property = dgrid.property_map[map_position.x .. map_position.y] } or nil)
-			if not tag or tag.passable or _force then
-				_moving = true
-				_lerp.v1 = go.get_position()
-				_lerp.v2 = _lerp.v1 + vmath.vector3(dgrid.stride, 0, 0)
-			end
-		end
-		if _moving then
-			if not complete then
-				msg.post("#", dgrid.msg.move_start)
-				lerp(dt)
-			else
-				msg.post("#", dgrid.msg.move_repeat)
-			end
-		elseif complete then
-			msg.post("#", dgrid.msg.move_end)
 		end
 	end
-
-	function member.unregister()
-		dgrid.member[go.get_id()] = nil
-	end
-
-	dgrid.member[go.get_id()] = true
-	snap()
-
-	return member
-
 end
 
 return dgrid
