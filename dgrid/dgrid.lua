@@ -273,7 +273,7 @@ function dgrid.turn_up(id)
 	local entity = entities[id]
 	if entity and not entity.moving then
 		entity.direction = 1
-		msg.post(entity.url, dgrid.messages.turn, { entity = entity })
+		msg.post(entity.url, dgrid.messages.turn, { direction = entity.direction })
 	end
 end
 
@@ -281,7 +281,7 @@ function dgrid.turn_left(id)
 	local entity = entities[id]
 	if entity and not entity.moving then
 		entity.direction = 2
-		msg.post(entity.url, dgrid.messages.turn, { entity = entity })
+		msg.post(entity.url, dgrid.messages.turn, { direction = entity.direction })
 	end
 end
 
@@ -289,7 +289,7 @@ function dgrid.turn_down(id)
 	local entity = entities[id]
 	if entity and not entity.moving then
 		entity.direction = 3
-		msg.post(entity.url, dgrid.messages.turn, { entity = entity })
+		msg.post(entity.url, dgrid.messages.turn, { direction = entity.direction })
 	end
 end
 
@@ -297,7 +297,19 @@ function dgrid.turn_right(id)
 	local entity = entities[id]
 	if entity and not entity.moving then
 		entity.direction = 4
-		msg.post(entity.url, dgrid.messages.turn, { entity = entity })
+		msg.post(entity.url, dgrid.messages.turn, { direction = entity.direction })
+	end
+end
+
+function dgrid.turn(id, direction)
+	if direction == 1 then
+		dgrid.turn_up(id)
+	elseif direction == 2 then
+		dgrid.turn_left(id)
+	elseif direction == 3 then
+		dgrid.turn_down(id)
+	elseif direction == 4 then
+		dgrid.turn_right(id)
 	end
 end
 
@@ -389,6 +401,18 @@ function dgrid.move_right(id, speed)
 				msg.post(entity.url, dgrid.messages.move_start, { entity = entity })
 			end
 		end
+	end
+end
+
+function dgrid.move(id, speed, direction)
+	if direction == 1 then
+		dgrid.move_up(id, speed)
+	elseif direction == 2 then
+		dgrid.move_left(id, speed)
+	elseif direction == 3 then
+		dgrid.move_down(id, speed)
+	elseif direction == 4 then
+		dgrid.move_right(id, speed)
 	end
 end
 
