@@ -111,14 +111,14 @@ local function check_collision(entity, direction)
 	local forward_tile_x, forward_tile_y = get_forward_tile_position(entity.tile_x, entity.tile_y, direction)
 	local tile = check_tag_collision(forward_tile_x, forward_tile_y)
 	if tile.tag.passable then
-		msg.post(entity.url, dgrid.messages.collide_passable, { entity = entity, tag = tile.tag, data = tile.data })
+		msg.post(entity.url, dgrid.messages.collide_passable, { tag = tile.tag, data = tile.data })
 	else
-		msg.post(entity.url, dgrid.messages.collide_impassable, { entity = entity, tag = tile.tag, data = tile.data })
+		msg.post(entity.url, dgrid.messages.collide_impassable, { tag = tile.tag, data = tile.data })
 		return true
 	end
 	local other_entity = check_entity_collision(forward_tile_x, forward_tile_y)
 	if other_entity then
-		msg.post(entity.url, dgrid.messages.collide_entity, { entity = entity, other_entity = other_entity })
+		msg.post(entity.url, dgrid.messages.collide_entity, { other_entity = other_entity })
 		return true
 	end
 end
@@ -332,7 +332,7 @@ function dgrid.move_up(id, speed)
 				entity.target_x = position.x
 				entity.target_y = position.y + tile_height
 				entity.tile_x, entity.tile_y = to_tile_position(entity.target_x, entity.target_y)
-				msg.post(entity.url, dgrid.messages.move_start, { entity = entity })
+				msg.post(entity.url, dgrid.messages.move_start, { direction = entity.direction, speed = entity.speed })
 			end
 		end
 	end
@@ -354,7 +354,7 @@ function dgrid.move_left(id, speed)
 				entity.target_x = position.x - tile_width
 				entity.target_y = position.y
 				entity.tile_x, entity.tile_y = to_tile_position(entity.target_x, entity.target_y)
-				msg.post(entity.url, dgrid.messages.move_start, { entity = entity })
+				msg.post(entity.url, dgrid.messages.move_start, { direction = entity.direction, speed = entity.speed })
 			end
 		end
 	end
@@ -376,7 +376,7 @@ function dgrid.move_down(id, speed)
 				entity.target_x = position.x
 				entity.target_y = position.y - tile_height
 				entity.tile_x, entity.tile_y = to_tile_position(entity.target_x, entity.target_y)
-				msg.post(entity.url, dgrid.messages.move_start, { entity = entity })
+				msg.post(entity.url, dgrid.messages.move_start, { direction = entity.direction, speed = entity.speed })
 			end
 		end
 	end
@@ -398,7 +398,7 @@ function dgrid.move_right(id, speed)
 				entity.target_x = position.x + tile_width
 				entity.target_y = position.y
 				entity.tile_x, entity.tile_y = to_tile_position(entity.target_x, entity.target_y)
-				msg.post(entity.url, dgrid.messages.move_start, { entity = entity })
+				msg.post(entity.url, dgrid.messages.move_start, { direction = entity.direction, speed = entity.speed })
 			end
 		end
 	end
