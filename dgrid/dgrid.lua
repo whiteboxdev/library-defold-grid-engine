@@ -94,12 +94,12 @@ local function get_forward_tile_position(tile_x, tile_y, direction)
 	end
 end
 
-local function check_tag_collision(tile_x, tile_y)
+local function get_tile(tile_x, tile_y)
 	local forward_map_x, forward_map_y = to_map_position(tile_x, tile_y)
 	return map[forward_map_y][forward_map_x]
 end
 
-local function check_entity_collision(tile_x, tile_y)
+local function get_entity(tile_x, tile_y)
 	for _, entity in pairs(entities) do
 		if entity.tile_x == tile_x and entity.tile_y == tile_y then
 			return entity
@@ -109,16 +109,16 @@ end
 
 local function check_collision(entity, direction)
 	local forward_tile_x, forward_tile_y = get_forward_tile_position(entity.tile_x, entity.tile_y, direction)
-	local tile = check_tag_collision(forward_tile_x, forward_tile_y)
+	local tile = get_tile(forward_tile_x, forward_tile_y)
 	if tile.tag.passable then
 		msg.post(entity.url, dgrid.messages.collide_passable, { tag = tile.tag, data = tile.data })
 	else
 		msg.post(entity.url, dgrid.messages.collide_impassable, { tag = tile.tag, data = tile.data })
 		return true
 	end
-	local other_entity = check_entity_collision(forward_tile_x, forward_tile_y)
+	local other_entity = get_entity(forward_tile_x, forward_tile_y)
 	if other_entity then
-		msg.post(entity.url, dgrid.messages.collide_entity, { other_entity = other_entity })
+		msg.post(entity.url, dgrid.messages.collide_entity, { data = other_entity.data })
 		return true
 	end
 end
@@ -231,7 +231,7 @@ function dgrid.set_map_data(x, y, data)
 	map[y][x].data = data
 end
 
-function dgrid.add_entity(id, url, center, direction)
+function dgrid.add_entity(id, url, center, direction, data)
 	if not entities[id] then
 		local position = go.get_position(id)
 		local tile_x, tile_y = to_tile_position(position.x, position.y)
@@ -241,6 +241,7 @@ function dgrid.add_entity(id, url, center, direction)
 			url = url,
 			center = center,
 			direction = direction,
+			data = data or {},
 			moving = false,
 			speed = nil,
 			dt = nil,
@@ -266,6 +267,16 @@ end
 function dgrid.set_url(id, url)
 	if entities[id] then
 		entities[id].url = url
+	end
+end
+
+function dgrid.interact(id)
+	local entity = entities[id]
+	if entity and not entity.moving then
+		local forward_tile_x, forward_tile_y = get_forward_tile_position(entity.tile_x, entity.tile_y, entity.direction)
+		local tile = get_tile(forward_tile_x, forward_tile_y)
+		local entity = get_entity(forward_tile_x, forward_tile_y)
+		return { tag = tile.tag, tile_data = tile.data, entity_data = entity.data }
 	end
 end
 
