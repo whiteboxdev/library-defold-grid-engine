@@ -24,7 +24,7 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
--- https://github.com/klaytonkowalski/defold-grid-engine
+-- https://github.com/klaytonkowalski/library-defold-grid-engine
 
 ----------------------------------------------------------------------
 -- PROPERTIES

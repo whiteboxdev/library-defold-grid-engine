@@ -1,4 +1,5 @@
 # Defold Grid Engine
+
 Defold Grid Engine provides grid-based movement, interactions, and utility features to a Defold game engine project.
 
 An [example project](https://github.com/klaytonkowalski/library-defold-grid-engine/tree/master/example) is available if you need additional help with configuration.  
@@ -9,11 +10,13 @@ Please click the "Star" button on GitHub if you find this asset to be useful!
 ![alt text](https://github.com/klaytonkowalski/library-defold-grid-engine/blob/master/assets/thumbnail.png?raw=true)
 
 ## Installation
+
 To install dgrid into your project, add one of the following links to your `game.project` dependencies:
   - https://github.com/klaytonkowalski/library-defold-grid-engine/archive/master.zip
   - URL of a [specific release](https://github.com/klaytonkowalski/library-defold-grid-engine/releases)
 
 ## Configuration
+
 Import the dgrid Lua module into your character's script:
 `local dgrid = require "dgrid.dgrid"`
 
