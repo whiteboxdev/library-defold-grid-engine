@@ -127,27 +127,27 @@ local function move(entity, dt)
 	local position = go.get_position(entity.id)
 	entity.dt = entity.dt + dt * entity.speed
 	if entity.direction == 1 then
-		local current_y = vmath.lerp(entity.dt, entity.start_y, entity.target_y)
-		if current_y > entity.target_y then
-			current_y = entity.target_y
+		local current_y = vmath.lerp(entity.dt, entity.start_pixel_y, entity.target_pixel_y)
+		if current_y > entity.target_pixel_y then
+			current_y = entity.target_pixel_y
 		end
 		go.set_position(vmath.vector3(position.x, current_y, position.z), entity.id)
 	elseif entity.direction == 2 then
-		local current_x = vmath.lerp(entity.dt, entity.start_x, entity.target_x)
-		if current_x < entity.target_x then
-			current_x = entity.target_x
+		local current_x = vmath.lerp(entity.dt, entity.start_pixel_x, entity.target_pixel_x)
+		if current_x < entity.target_pixel_x then
+			current_x = entity.target_pixel_x
 		end
 		go.set_position(vmath.vector3(current_x, position.y, position.z), entity.id)
 	elseif entity.direction == 3 then
-		local current_y = vmath.lerp(entity.dt, entity.start_y, entity.target_y)
-		if current_y < entity.target_y then
-			current_y = entity.target_y
+		local current_y = vmath.lerp(entity.dt, entity.start_pixel_y, entity.target_pixel_y)
+		if current_y < entity.target_pixel_y then
+			current_y = entity.target_pixel_y
 		end
 		go.set_position(vmath.vector3(position.x, current_y, position.z), entity.id)
 	elseif entity.direction == 4 then
-		local current_x = vmath.lerp(entity.dt, entity.start_x, entity.target_x)
-		if current_x > entity.target_x then
-			current_x = entity.target_x
+		local current_x = vmath.lerp(entity.dt, entity.start_pixel_x, entity.target_pixel_x)
+		if current_x > entity.target_pixel_x then
+			current_x = entity.target_pixel_x
 		end
 		go.set_position(vmath.vector3(current_x, position.y, position.z), entity.id)
 	end
@@ -156,13 +156,13 @@ end
 local function is_move_complete(entity)
 	local position = go.get_position(entity.id)
 	if entity.direction == 1 then
-		return position.y == entity.target_y
+		return position.y == entity.target_pixel_y
 	elseif entity.direction == 2 then
-		return position.x == entity.target_x
+		return position.x == entity.target_pixel_x
 	elseif entity.direction == 3 then
-		return position.y == entity.target_y
+		return position.y == entity.target_pixel_y
 	elseif entity.direction == 4 then
-		return position.x == entity.target_x
+		return position.x == entity.target_pixel_x
 	end
 end
 
@@ -170,11 +170,11 @@ local function complete_move(entity)
 	entity.moving = false
 	entity.speed = nil
 	entity.dt = nil
-	entity.start_x = nil
-	entity.start_y = nil
-	entity.target_x = nil
-	entity.target_y = nil
-	msg.post(entity.url, dgrid.messages.move_complete, { entity = entity })
+	entity.start_pixel_x = nil
+	entity.start_pixel_y = nil
+	entity.target_pixel_x = nil
+	entity.target_pixel_y = nil
+	msg.post(entity.url, dgrid.messages.move_complete, { tile_x = entity.tile_x, tile_y = entity.tile_y })
 end
 
 local function snap_to_tile(entity)
@@ -338,12 +338,13 @@ function dgrid.move_up(id, speed)
 				entity.speed = speed
 				entity.dt = 0
 				local position = go.get_position(id)
-				entity.start_x = position.x
-				entity.start_y = position.y
-				entity.target_x = position.x
-				entity.target_y = position.y + tile_height
-				entity.tile_x, entity.tile_y = to_tile_position(entity.target_x, entity.target_y)
-				msg.post(entity.url, dgrid.messages.move_start, { direction = entity.direction, speed = entity.speed })
+				entity.start_pixel_x = position.x
+				entity.start_pixel_y = position.y
+				entity.target_pixel_x = position.x
+				entity.target_pixel_y = position.y + tile_height
+				local start_tile_x, start_tile_y = to_tile_position(entity.start_pixel_x, entity.start_pixel_y)
+				entity.tile_x, entity.tile_y = to_tile_position(entity.target_pixel_x, entity.target_pixel_y)
+				msg.post(entity.url, dgrid.messages.move_start, { direction = entity.direction, speed = entity.speed, start_x = start_tile_x, start_y = start_tile_y, target_x = entity.tile_x, target_y = entity.tile_y })
 			end
 		end
 	end
@@ -360,12 +361,13 @@ function dgrid.move_left(id, speed)
 				entity.direction = 2
 				entity.dt = 0
 				local position = go.get_position(id)
-				entity.start_x = position.x
-				entity.start_y = position.y
-				entity.target_x = position.x - tile_width
-				entity.target_y = position.y
-				entity.tile_x, entity.tile_y = to_tile_position(entity.target_x, entity.target_y)
-				msg.post(entity.url, dgrid.messages.move_start, { direction = entity.direction, speed = entity.speed })
+				entity.start_pixel_x = position.x
+				entity.start_pixel_y = position.y
+				entity.target_pixel_x = position.x - tile_width
+				entity.target_pixel_y = position.y
+				local start_tile_x, start_tile_y = to_tile_position(entity.start_pixel_x, entity.start_pixel_y)
+				entity.tile_x, entity.tile_y = to_tile_position(entity.target_pixel_x, entity.target_pixel_y)
+				msg.post(entity.url, dgrid.messages.move_start, { direction = entity.direction, speed = entity.speed, start_x = start_tile_x, start_y = start_tile_y, target_x = entity.tile_x, target_y = entity.tile_y })
 			end
 		end
 	end
@@ -382,12 +384,13 @@ function dgrid.move_down(id, speed)
 				entity.direction = 3
 				entity.dt = 0
 				local position = go.get_position(id)
-				entity.start_x = position.x
-				entity.start_y = position.y
-				entity.target_x = position.x
-				entity.target_y = position.y - tile_height
-				entity.tile_x, entity.tile_y = to_tile_position(entity.target_x, entity.target_y)
-				msg.post(entity.url, dgrid.messages.move_start, { direction = entity.direction, speed = entity.speed })
+				entity.start_pixel_x = position.x
+				entity.start_pixel_y = position.y
+				entity.target_pixel_x = position.x
+				entity.target_pixel_y = position.y - tile_height
+				local start_tile_x, start_tile_y = to_tile_position(entity.start_pixel_x, entity.start_pixel_y)
+				entity.tile_x, entity.tile_y = to_tile_position(entity.target_pixel_x, entity.target_pixel_y)
+				msg.post(entity.url, dgrid.messages.move_start, { direction = entity.direction, speed = entity.speed, start_x = start_tile_x, start_y = start_tile_y, target_x = entity.tile_x, target_y = entity.tile_y })
 			end
 		end
 	end
@@ -404,12 +407,13 @@ function dgrid.move_right(id, speed)
 				entity.direction = 4
 				entity.dt = 0
 				local position = go.get_position(id)
-				entity.start_x = position.x
-				entity.start_y = position.y
-				entity.target_x = position.x + tile_width
-				entity.target_y = position.y
-				entity.tile_x, entity.tile_y = to_tile_position(entity.target_x, entity.target_y)
-				msg.post(entity.url, dgrid.messages.move_start, { direction = entity.direction, speed = entity.speed })
+				entity.start_pixel_x = position.x
+				entity.start_pixel_y = position.y
+				entity.target_pixel_x = position.x + tile_width
+				entity.target_pixel_y = position.y
+				local start_tile_x, start_tile_y = to_tile_position(entity.start_pixel_x, entity.start_pixel_y)
+				entity.tile_x, entity.tile_y = to_tile_position(entity.target_pixel_x, entity.target_pixel_y)
+				msg.post(entity.url, dgrid.messages.move_start, { direction = entity.direction, speed = entity.speed, start_x = start_tile_x, start_y = start_tile_y, target_x = entity.tile_x, target_y = entity.tile_y })
 			end
 		end
 	end
