@@ -168,7 +168,7 @@ end
 
 local function complete_move(entity)
 	entity.moving = false
-	entity.speed = nil
+	entity.speed = 0
 	entity.dt = nil
 	entity.start_pixel_x = nil
 	entity.start_pixel_y = nil
@@ -187,11 +187,6 @@ end
 ----------------------------------------------------------------------
 -- MODULE FUNCTIONS
 ----------------------------------------------------------------------
-
-function dgrid.set_tile_dimensions(width, height)
-	tile_width = width
-	tile_height = height
-end
 
 function dgrid.set_map_dimensions(width, height)
 	map = {}
@@ -218,17 +213,26 @@ function dgrid.set_map_tags(keys)
 	end
 end
 
-function dgrid.add_tag(id, passable)
+function dgrid.add_map_tag(id, passable)
 	table.insert(tags, { id = id, passable = passable })
 	return #tags
 end
 
-function dgrid.modify_tag(key, passable)
+function dgrid.modify_map_tag(key, passable)
 	tags[key].passable = passable
 end
 
-function dgrid.set_map_data(x, y, data)
+function dgrid.set_tile_dimensions(width, height)
+	tile_width = width
+	tile_height = height
+end
+
+function dgrid.set_tile_data(x, y, data)
 	map[y][x].data = data
+end
+
+function dgrid.get_tile_data(x, y)
+	return map[y][x].data
 end
 
 function dgrid.add_entity(id, url, center, direction, data)
@@ -243,7 +247,7 @@ function dgrid.add_entity(id, url, center, direction, data)
 			direction = direction,
 			data = data or {},
 			moving = false,
-			speed = nil,
+			speed = 0,
 			dt = nil,
 			start_x = nil,
 			start_y = nil,
@@ -264,9 +268,37 @@ function dgrid.clear_entities()
 	entities = {}
 end
 
-function dgrid.set_url(id, url)
+function dgrid.set_entity_url(id, url)
 	if entities[id] then
 		entities[id].url = url
+	end
+end
+
+function dgrid.get_entity_direction(id)
+	return entities[id] and entities[id].direction
+end
+
+function dgrid.set_entity_data(id, data)
+	if entities[id] then
+		entities[id].data = data
+	end
+end
+
+function dgrid.get_entity_data(id)
+	return entities[id] and entities[id].data
+end
+
+function dgrid.is_entity_moving(id)
+	return entities[id] and entities[id].moving
+end
+
+function dgrid.get_entity_speed(id)
+	return entities[id] and entities[id].speed
+end
+
+function dgrid.get_entity_position(id)
+	if entities[id] then
+		return entities[id].tile_x, entities[id].tile_y
 	end
 end
 
@@ -322,10 +354,6 @@ function dgrid.turn(id, direction)
 	elseif direction == 4 then
 		dgrid.turn_right(id)
 	end
-end
-
-function dgrid.get_direction(id)
-	return entities[id] and entities[id].direction
 end
 
 function dgrid.move_up(id, speed)
@@ -429,10 +457,6 @@ function dgrid.move(id, speed, direction)
 	elseif direction == 4 then
 		dgrid.move_right(id, speed)
 	end
-end
-
-function dgrid.is_moving(id)
-	return entities[id] and entities[id].moving
 end
 
 function dgrid.update(dt)
