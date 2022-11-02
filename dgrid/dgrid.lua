@@ -227,10 +227,6 @@ function dgrid.set_tile_dimensions(width, height)
 	tile_height = height
 end
 
-function dgrid.set_tile_data(x, y, data)
-	map[y][x].data = data
-end
-
 function dgrid.get_tile_data(x, y)
 	return map[y][x].data
 end
