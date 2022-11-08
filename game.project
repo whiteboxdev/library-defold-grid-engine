@@ -14,10 +14,10 @@ input_method = HiddenInputField
 
 [project]
 title = Defold Grid Engine
-dependencies = https://github.com/rgrams/rendercam/archive/master.zip
 version = 0.4.2
 publisher = Klayton Kowalski
 developer = Klayton Kowalski
+dependencies#0 = https://github.com/rgrams/rendercam/archive/master.zip
 
 [library]
 include_dirs = dgrid

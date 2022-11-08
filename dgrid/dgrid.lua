@@ -250,7 +250,8 @@ function dgrid.add_entity(id, url, center, direction, data)
 			target_x = nil,
 			target_y = nil,
 			tile_x = tile_x,
-			tile_y = tile_y
+			tile_y = tile_y,
+			input = true
 		}
 		snap_to_tile(entities[id])
 	end
@@ -298,19 +299,25 @@ function dgrid.get_entity_position(id)
 	end
 end
 
+function dgrid.toggle_entity_input(id, flag)
+	if entities[id] then
+		entities[id].input = flag
+	end
+end
+
 function dgrid.interact(id)
 	local entity = entities[id]
-	if entity and not entity.moving then
+	if entity and not entity.moving and entity.input then
 		local forward_tile_x, forward_tile_y = get_forward_tile_position(entity.tile_x, entity.tile_y, entity.direction)
 		local tile = get_tile(forward_tile_x, forward_tile_y)
 		local entity = get_entity(forward_tile_x, forward_tile_y)
-		return { tag = tile.tag, tile_data = tile.data, entity_data = entity.data }
+		return { tag = tile.tag, tile_data = tile and tile.data, entity_data = entity and entity.data }
 	end
 end
 
 function dgrid.turn_up(id)
 	local entity = entities[id]
-	if entity and not entity.moving then
+	if entity and not entity.moving and entity.input then
 		entity.direction = 1
 		msg.post(entity.url, dgrid.messages.turn, { direction = entity.direction })
 	end
@@ -318,7 +325,7 @@ end
 
 function dgrid.turn_left(id)
 	local entity = entities[id]
-	if entity and not entity.moving then
+	if entity and not entity.moving and entity.input then
 		entity.direction = 2
 		msg.post(entity.url, dgrid.messages.turn, { direction = entity.direction })
 	end
@@ -326,7 +333,7 @@ end
 
 function dgrid.turn_down(id)
 	local entity = entities[id]
-	if entity and not entity.moving then
+	if entity and not entity.moving and entity.input then
 		entity.direction = 3
 		msg.post(entity.url, dgrid.messages.turn, { direction = entity.direction })
 	end
@@ -334,7 +341,7 @@ end
 
 function dgrid.turn_right(id)
 	local entity = entities[id]
-	if entity and not entity.moving then
+	if entity and not entity.moving and entity.input then
 		entity.direction = 4
 		msg.post(entity.url, dgrid.messages.turn, { direction = entity.direction })
 	end
@@ -355,7 +362,7 @@ end
 function dgrid.move_up(id, speed)
 	local entity = entities[id]
 	if entity then
-		if not entity.moving then
+		if not entity.moving and entity.input then
 			dgrid.turn_up(entity.id)
 			if not check_collision(entity, 1) then
 				entity.moving = true
@@ -377,7 +384,7 @@ end
 function dgrid.move_left(id, speed)
 	local entity = entities[id]
 	if entity then
-		if not entity.moving then
+		if not entity.moving and entity.input then
 			dgrid.turn_left(entity.id)
 			if not check_collision(entity, 2) then
 				entity.moving = true
@@ -400,7 +407,7 @@ end
 function dgrid.move_down(id, speed)
 	local entity = entities[id]
 	if entity then
-		if not entity.moving then
+		if not entity.moving and entity.input then
 			dgrid.turn_down(entity.id)
 			if not check_collision(entity, 3) then
 				entity.moving = true
@@ -423,7 +430,7 @@ end
 function dgrid.move_right(id, speed)
 	local entity = entities[id]
 	if entity then
-		if not entity.moving then
+		if not entity.moving and entity.input then
 			dgrid.turn_right(entity.id)
 			if not check_collision(entity, 4) then
 				entity.moving = true
