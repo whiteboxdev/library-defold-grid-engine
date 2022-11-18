@@ -305,6 +305,12 @@ function dgrid.toggle_entity_input(id, flag)
 	end
 end
 
+function dgrid.toggle_all_entity_input(flag)
+	for _, entity in entities do
+		entity.input = flag
+	end
+end
+
 function dgrid.interact(id)
 	local entity = entities[id]
 	if entity and not entity.moving and entity.input then
