@@ -2,12 +2,13 @@
 
 Defold Grid Engine provides grid-based movement, interactions, and utility features to a Defold game engine project.
 
-An [example project](https://github.com/klaytonkowalski/library-defold-grid-engine/tree/master/example) is available if you need additional help with configuration.  
-Visit my [Giphy](https://media.giphy.com/media/YFnSgIm0DdVJmTmN3N/giphy.gif) to see an animated gif of the example project.
+An [example project](https://github.com/klaytonkowalski/library-defold-grid-engine/tree/master/example) is available if you need additional help with configuration.
 
 Please click the ☆ button on GitHub if this repository is useful or interesting. Thank you!
 
 ![alt text](https://github.com/klaytonkowalski/library-defold-grid-engine/blob/master/assets/thumbnail.png?raw=true)
+
+![alt text](https://github.com/klaytonkowalski/library-defold-grid-engine/blob/master/assets/example.gif?raw=true)
 
 ## Installation
 
