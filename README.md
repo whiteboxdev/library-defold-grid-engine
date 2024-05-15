@@ -4,14 +4,14 @@ Defold Grid Engine provides grid-based movement, interactions, and utility featu
 
 Please click the ☆ button on GitHub if this repository is useful or interesting. Thank you!
 
-![alt text](https://github.com/klaytonkowalski/library-defold-grid-engine/blob/master/assets/thumbnail.png?raw=true)
+![alt text](https://github.com/whiteboxdev/library-defold-grid-engine/blob/master/assets/thumbnail.png?raw=true)
 
-![alt text](https://github.com/klaytonkowalski/library-defold-grid-engine/blob/master/assets/example.gif?raw=true)
+![alt text](https://github.com/whiteboxdev/library-defold-grid-engine/blob/master/assets/example.gif?raw=true)
 
 ## Installation
 
 Add the latest version to your project's dependencies:  
-https://github.com/klaytonkowalski/library-defold-grid-engine/archive/master.zip
+https://github.com/whiteboxdev/library-defold-grid-engine/archive/master.zip
 
 ## Configuration
 
