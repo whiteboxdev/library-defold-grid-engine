@@ -6,8 +6,6 @@ Please click the ☆ button on GitHub if this repository is useful or interestin
 
 ![alt text](https://github.com/whiteboxdev/library-defold-grid-engine/blob/master/assets/thumbnail.png?raw=true)
 
-![alt text](https://github.com/whiteboxdev/library-defold-grid-engine/blob/master/assets/example.gif?raw=true)
-
 ## Installation
 
 Add the latest version to your project's dependencies:  
