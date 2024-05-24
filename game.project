@@ -15,8 +15,8 @@ input_method = HiddenInputField
 [project]
 title = Defold Grid Engine
 version = 1.0.0
-publisher = Klayton Kowalski
-developer = Klayton Kowalski
+publisher = White Box Dev
+developer = White Box Dev
 dependencies#0 = https://github.com/rgrams/rendercam/archive/master.zip
 
 [library]
